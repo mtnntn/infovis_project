@@ -42,10 +42,12 @@ function plot_map(us) {
         .attr("d", path)
 }
 
-function handleMouseOver(d, i) {  // Add interactivity
-    let location_id = d3.select(this).attr("location_id");
-    let zone = d3.select(this).attr("zone");
-    let borough = d3.select(this).attr("borough");
+function handleMouseOver() {  // Add interactivity
+    let selected_element = d3.select(this);
+
+    let location_id = selected_element.attr("location_id");
+    let zone = selected_element.attr("zone");
+    let borough = selected_element.attr("borough");
 
     let infobox = svg.append("g").attr("transform", "translate(200,200)").classed("infobox", true);
 
@@ -72,6 +74,6 @@ function handleMouseOver(d, i) {  // Add interactivity
         .attr("font-size", "1.2em");
 }
 
-function handledMouseOut(d, i) {
+function handledMouseOut() {
     svg.selectAll("g.infobox").remove();
 }

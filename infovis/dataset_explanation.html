@@ -17,8 +17,14 @@
     <!-- Custom styles (optional) -->
     <link href="css/style.css" rel="stylesheet">
     <!-- /Custom styles (optional) -->
+    <style>
+        .zone {
+            stroke: whitesmoke;
+            stroke-linejoin: round;
+            stroke-width: 0.05em;
+        }
+    </style>
     <!-- /Styles -->
-    
 </head>
 <body>
 
@@ -46,28 +52,22 @@
 <!-- Start your project here-->
 
 <section class="text-center my-5">
-
     <!-- Section heading -->
     <h2 class="h1-responsive font-weight-bold my-5">NYC Taxi & Limousine Commission dataset </h2>
     <!-- Section description -->
     <p class="grey-text w-responsive mx-auto mb-5"></p>
-
-    <!-- Grid row -->
-    <div class="row">
-
-
-
-    </div>
-    <!-- Grid row -->
-
 </section>
-<!--/.Panel-->
+
+<div class="container">
+    <div class="row" id="main-container">
+        <svg width="1260" height="720"></svg>
+    </div>
+</div>
+
+
 <!-- /Start your project here-->
 
 <!-- Javascript dependencies -->
-<!-- d3.js-->
-<script type="text/javascript" src="vendor/d3/d3.min.js"></script>
-<!-- /d3.js-->
 <!-- jQuery -->
 <script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
 <!-- /jQuery -->
@@ -78,9 +78,13 @@
 <script type="text/javascript" src="vendor/bmd/js/bootstrap-material-design.js"></script>
 <!-- /MDB core JavaScript -->
 
-<!-- Optional js sources-->
-
 <!-- /Optional js sources-->
+<!-- d3.js-->
+<script type="text/javascript" src="vendor/d3/d3.js"></script>
+<!-- /d3.js-->
+<script type="text/javascript" src="vendor/d3/d3-scale-chromatic.v1.min.js"></script>
+<script type="text/javascript" src="vendor/d3/topojson.v2.min.js"></script>
+<script type="text/javascript" src="js/dataset_explanation.js"></script>
 
 <!-- /Javascript dependencies -->
 

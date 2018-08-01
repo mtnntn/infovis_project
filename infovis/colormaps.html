@@ -23,6 +23,10 @@
             stroke-linejoin: round;
             stroke-width: 0.05em;
         }
+
+        .container{
+            margin-top: 2.5em;
+        }
     </style>
     <!-- /Custom styles (optional) -->
 
@@ -35,7 +39,7 @@
 <!-- Navigation -->
 <ul class="nav justify-content-center amber darken-1 lighten-4 py-4">
     <li class="nav-item">
-        <a class="nav-link white-text active" href="colormaps.html">TBA</a>
+        <a class="nav-link white-text active" href="colormaps.html">Color Maps</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="#!">TBA</a>
@@ -52,39 +56,85 @@
 </ul>
 <!-- /Navigation -->
 
-
 <!-- Start your project here-->
+
 <!-- Panel -->
 <section class="text-center my-5">
     <!-- Section heading -->
-    <h2 class="h1-responsive font-weight-bold my-5">Heat map</h2>
+    <h2 class="h1-responsive font-weight-bold my-5">Color Maps</h2>
     <!-- Section description -->
-    <p class="grey-text w-responsive mx-auto mb-5">
-    In order to analyze the trend of the trips different heatmaps are available
-    </p>
-
 </section>
-<!--/.Panel-->
+<!-- /Panel -->
 
-<!-- Panel -->
+<!--Map-->
 <div class="container">
-
-    <div class="row">
-
-
-
-    </div>
-
-
     <div class="row" id="main-container">
         <svg width="1260" height="720"></svg>
     </div>
-
-
 </div>
-<!--/.Panel-->
+<!--/Map-->
 
-
+<!--/Form-->
+<div class="container">
+    <!--<div class="row">-->
+    <form>
+        <div class="form-row">
+            <div class="col">
+                <label for="month" class="sr-only">Month</label>
+                <select class="form-control" id="month" name="month">
+                    <option value="-1">All</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May </option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="dow" class="sr-only">Day Of The Week</label>
+                <select class="form-control" id="dow" name="daw">
+                    <option value="-1">All</option>
+                    <option value="0">Sunday</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="ts" class="sr-only">Time Slot</label>
+                <select class="form-control" id="ts" name="ts">
+                    <option value="-1">All</option>
+                    <option value="TS1">06.00 - 09.00</option>
+                    <option value="TS2">09.00 - 12.00</option>
+                    <option value="TS3">12.00 - 17.00</option>
+                    <option value="TS4">17.00 - 20.00</option>
+                    <option value="TS5">20.00 - 24.00</option>
+                    <option value="TS6">24.00 - 06.00</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="property" class="sr-only">Property</label>
+                <select class="form-control" id="property" name="property">
+                    <option value="pull">Pull Location</option>
+                    <option value="drop">Drop-off Location</option>
+                </select>
+            </div>
+            <button type="button" id="form_submit" class="btn btn-amber btn-lg btn-block">Block level button</button>
+        </div>
+    </form>
+    <!--</div>-->
+</div>
+<!--/Form-->
 
 <!-- /Start your project here-->
 
@@ -106,6 +156,7 @@
 <!-- /d3.js-->
 <script type="text/javascript" src="vendor/d3/d3-scale-chromatic.v1.min.js"></script>
 <script type="text/javascript" src="vendor/d3/topojson.v2.min.js"></script>
+<script type="text/javascript" src="js/colormaps_utils.js"></script>
 <script type="text/javascript" src="js/colormaps.js"></script>
 
 <!-- /Javascript dependencies -->

@@ -49,7 +49,38 @@
     stroke-width: 0.05em;
 }
 
+.title{
+    font-family: "Raleway-Bold";
+    font-size: 2em;
+}
 
+.subtitle{
+    font-family: "Raleway-Thin";
+    font-size: 1em;
+}
+
+.zone_location_id{
+    font-family: "Raleway-Heavy";
+    font-size: 6em;
+}
+
+.zone_name {
+    font-family: "Raleway-Heavy";
+    font-size: 3.8em;
+}
+
+.zone_borough{
+    font-family: "Raleway-Regular";
+    font-size: 2.6em;
+}
+
+p {
+  font-family: "Raleway-Light";
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Raleway-Bold";
+}
 
 /**
  * COLORS

@@ -18,14 +18,17 @@
     <link href="css/style.css" rel="stylesheet">
 
     <style>
-        .zone {
-            stroke: whitesmoke;
-            stroke-linejoin: round;
-            stroke-width: 0.05em;
+        .zone_location_id{
+            font-size: 2em;
+            margin-left: 2em;
         }
-
-        .container{
-            margin-top: 2.5em;
+        .zone_name{
+            font-size: 2em;
+            margin-left: 2em;
+        }
+        .zone_borough{
+            font-size: 2em;
+            margin-left: 2em;
         }
     </style>
     <!-- /Custom styles (optional) -->
@@ -61,15 +64,99 @@
 <!-- Panel -->
 <section class="text-center my-5">
     <!-- Section heading -->
-    <h2 class="h1-responsive font-weight-bold my-5">Color Maps</h2>
+    <h2 class="h1-responsive my-5">Color Maps</h2>
     <!-- Section description -->
 </section>
 <!-- /Panel -->
 
 <!--Map-->
-<div class="container">
+<div class="container-fluid">
     <div class="row" id="main-container">
-        <svg width="1260" height="720"></svg>
+        <div class="col-lg-2 infobox">
+            <div class="zone_location_id row"></div>
+            <div class="zone_name row"></div>
+            <div class="zone_borough row"></div>
+        </div>
+        <div class="col-lg-7">
+            <svg width="1260" height="900"></svg>
+        </div>
+        <div class="col-lg-3">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9">
+                    <p>Change the form inputs and the map will be colored according to the selection.<p>
+                    <p>By clicking onto a specific zone you'll have the possibility to exclude the selected one from the analysis.</p>
+                    <p>Over a zone to display more information or double click in order to see a details page.</p>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9">
+                    <form>
+                        <div class="col">
+                            <label for="month" class="sr-only">Month</label>
+                            <select class="form-control" id="month" name="month">
+                                <option value="-1">All</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May </option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="dow" class="sr-only">Day Of The Week</label>
+                            <select class="form-control" id="dow" name="daw">
+                                <option value="-1">All</option>
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="ts" class="sr-only">Time Slot</label>
+                            <select class="form-control" id="ts" name="ts">
+                                <option value="-1">All</option>
+                                <option value="TS1">06.00 - 09.00</option>
+                                <option value="TS2">09.00 - 12.00</option>
+                                <option value="TS3">12.00 - 17.00</option>
+                                <option value="TS4">17.00 - 20.00</option>
+                                <option value="TS5">20.00 - 24.00</option>
+                                <option value="TS6">24.00 - 06.00</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="property" class="sr-only">Property</label>
+                            <select class="form-control" id="property" name="property">
+                                <option value="pull">Pull Location</option>
+                                <option value="drop">Drop-off Location</option>
+                            </select>
+                        </div>
+                        <div class="col" style="margin-top: 1em;">
+                            <button type="button" id="form_submit" class="btn btn-amber btn-lg btn-block">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9"></div>
+                <div class="col-lg-2"></div>
+            </div>
+        </div>
     </div>
 </div>
 <!--/Map-->
@@ -77,61 +164,7 @@
 <!--/Form-->
 <div class="container">
     <!--<div class="row">-->
-    <form>
-        <div class="form-row">
-            <div class="col">
-                <label for="month" class="sr-only">Month</label>
-                <select class="form-control" id="month" name="month">
-                    <option value="-1">All</option>
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May </option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
-            </div>
-            <div class="col">
-                <label for="dow" class="sr-only">Day Of The Week</label>
-                <select class="form-control" id="dow" name="daw">
-                    <option value="-1">All</option>
-                    <option value="0">Sunday</option>
-                    <option value="1">Monday</option>
-                    <option value="2">Tuesday</option>
-                    <option value="3">Wednesday</option>
-                    <option value="4">Thursday</option>
-                    <option value="5">Friday</option>
-                    <option value="6">Saturday</option>
-                </select>
-            </div>
-            <div class="col">
-                <label for="ts" class="sr-only">Time Slot</label>
-                <select class="form-control" id="ts" name="ts">
-                    <option value="-1">All</option>
-                    <option value="TS1">06.00 - 09.00</option>
-                    <option value="TS2">09.00 - 12.00</option>
-                    <option value="TS3">12.00 - 17.00</option>
-                    <option value="TS4">17.00 - 20.00</option>
-                    <option value="TS5">20.00 - 24.00</option>
-                    <option value="TS6">24.00 - 06.00</option>
-                </select>
-            </div>
-            <div class="col">
-                <label for="property" class="sr-only">Property</label>
-                <select class="form-control" id="property" name="property">
-                    <option value="pull">Pull Location</option>
-                    <option value="drop">Drop-off Location</option>
-                </select>
-            </div>
-            <button type="button" id="form_submit" class="btn btn-amber btn-lg btn-block">Block level button</button>
-        </div>
-    </form>
+
     <!--</div>-->
 </div>
 <!--/Form-->

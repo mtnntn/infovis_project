@@ -1,6 +1,6 @@
-let svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+let map_svg = d3.select("svg.map").attr("width", 900).attr("height", 1260);
+
+let infobox_div = d3.select("div.infobox");
 
 let borough_color_switcher = {
     "Manhattan" : d3.rgb(10, 112, 4, 0.69),
@@ -20,11 +20,17 @@ function plot_map(us) {
         type: "GeometryCollection",
         geometries: us.objects["ny_zones"]["geometries"]
     });
-    // Reference: http://mapshaper.org/, https://github.com/topojson/topojson/wiki/Introduction, https://github.com/d3/d3-geo
-    let projections = d3.geoAlbers().fitExtent( [ [0,0], [1260,720] ], ny_zones);
+
+    /* References:
+    * - https://stackoverflow.com/questions/18920345/d3-js-mercator-projection-to-nyc-map
+    * - http://mapshaper.org/
+    * - https://github.com/topojson/topojson/wiki/Introduction
+    * - https://github.com/d3/d3-geo
+    * */
+    let projections = d3.geoMercator().center([-73.94, 40.70]).scale(90000).translate([ (1050)/2, 450]);
     let path = d3.geoPath(projections);
 
-    svg.append("g")
+    map_svg.append("g")
         .attr("class", "zones")
         .selectAll("path")
         .data(ny_zones.features)
@@ -35,11 +41,11 @@ function plot_map(us) {
         .on("mouseout", handledMouseOut)
         .attr("location_id", function (d) { return d.properties["LocationID"] })
         .attr("borough", function (d) { return d.properties["borough"] })
-        .attr("zone", function (d) { return d.properties["zone"] })
+        .attr("zone", function (d) { let zn = d.properties["zone"]; return zn })
         .attr("fill", function(d) {
             return borough_color_switcher[d.properties["borough"]]
         })
-        .attr("d", path)
+        .attr("d", path);
 }
 
 function handleMouseOver() {  // Add interactivity
@@ -48,32 +54,15 @@ function handleMouseOver() {  // Add interactivity
     let location_id = selected_element.attr("location_id");
     let zone = selected_element.attr("zone");
     let borough = selected_element.attr("borough");
+    let color = borough_color_switcher[borough];
 
-    let infobox = svg.append("g").attr("transform", "translate(200,200)").classed("infobox", true);
-
-    infobox.append("circle")
-        .attr("r", 160)
-        .attr("fill", borough_color_switcher[borough]);
-
-    infobox.append("text").attr("text-anchor", "middle")
-        .text(location_id)
-        .attr("dy", -20)
-        .attr("fill", "white")
-        .attr("font-size", "1.5em");
-
-    infobox.append("text").attr("text-anchor", "middle")
-        .text(zone)
-        .attr("dy", 10)
-        .attr("fill", "white")
-        .attr("font-size", "1.2em");
-
-    infobox.append("text").attr("text-anchor", "middle")
-        .text(borough)
-        .attr("dy", 40)
-        .attr("fill", "white")
-        .attr("font-size", "1.2em");
+    infobox_div.style("color", color).style("margin-top", "7em");
+    infobox_div.select(".zone_location_id").append("text").text(location_id);
+    infobox_div.select(".zone_name").append("text").text(zone);
+    infobox_div.select(".zone_borough").append("text").text(borough.toUpperCase());
 }
 
 function handledMouseOut() {
-    svg.selectAll("g.infobox").remove();
+    infobox_div.selectAll("br").remove();
+    infobox_div.selectAll("text").remove();
 }

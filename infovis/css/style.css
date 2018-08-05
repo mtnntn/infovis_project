@@ -1,3 +1,56 @@
+@font-face {
+    font-family: 'Raleway-Bold'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Bold.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-ExtraBold'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-ExtraBold.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-ExtraLight'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-ExtraLight.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-Heavy'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Heavy.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-Light'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Light.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-Medium'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Medium.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-Regular'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Regular.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-SemiBold'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-SemiBold.ttf'); /*URL to font*/
+}
+
+@font-face {
+    font-family: 'Raleway-Thin'; /*a name to be used later*/
+    src: url('../vendor/raleway/Raleway-Thin.ttf'); /*URL to font*/
+}
+
+.zone {
+    stroke: whitesmoke;
+    stroke-linejoin: round;
+    stroke-width: 0.05em;
+}
+
+
+
 /**
  * COLORS
  */

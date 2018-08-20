@@ -40,9 +40,9 @@
 <body>
 
 <!-- Navigation -->
-<ul class="nav justify-content-center amber darken-1 lighten-4 py-4">
+<ul class="nav custom_nav justify-content-center py-4">
     <li class="nav-item">
-        <a class="nav-link white-text active" href="colormaps.html">Color Maps</a>
+        <a class="nav-link white-text active" href="colormaps.html">Color maps</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="#!">TBA</a>
@@ -84,15 +84,17 @@
             <div class="row">
                 <div class="col-lg-1"></div>
                 <div class="col-lg-9">
-                    <p>Change the form inputs and the map will be colored according to the selection.<p>
-                    <p>By clicking onto a specific zone you'll have the possibility to exclude the selected one from the analysis.</p>
-                    <p>Over a zone to display more information or double click in order to see a details page.</p>
+                    <div class="row">
+                        <p>Change the form inputs and the map will be colored according to the selection.<p>
+                        <p>By clicking onto a specific zone you'll have the possibility to exclude the selected one from the analysis.</p>
+                        <p>Over a zone to display more information or double click in order to see a details page.</p>
+                    </div>
                 </div>
                 <div class="col-lg-2"></div>
             </div>
             <div class="row">
                 <div class="col-lg-1"></div>
-                <div class="col-lg-9">
+                <div class="col-lg-9 text-center">
                     <form>
                         <div class="col">
                             <label for="month" class="sr-only">Month</label>
@@ -154,7 +156,11 @@
             <div class="row">
                 <div class="col-lg-1"></div>
                 <div class="col-lg-9">
-                    <svg class="legend_svg"></svg>
+                    <svg class="row legend_svg"></svg>
+                    <div class="row excluded_zones_div">
+                        Excluded zones:
+                        <ul class="col-lg-12 excluded_zones_list"></ul>
+                    </div>
                 </div>
                 <div class="col-lg-2"></div>
             </div>
@@ -164,10 +170,12 @@
 <!--/Map-->
 
 <!--/Form-->
-<div class="container">
-    <!--<div class="row">-->
-
-    <!--</div>-->
+<div class="container-fluid" style="margin-top: 2em;">
+    <div class="row">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-7" id="table-container"> </div>
+        <div class="col-lg-3"> </div>
+    </div>
 </div>
 <!--/Form-->
 

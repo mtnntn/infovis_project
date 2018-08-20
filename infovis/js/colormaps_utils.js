@@ -7,11 +7,13 @@ var borough_color_switcher = {
     "EWR" : d3.rgb(155, 0, 198, 0.55),
 };
 
+var EXCLUDED_ZONE_COLOR = "fuchsia";
+
 function default_coloring(zone_data){
     return borough_color_switcher[zone_data.properties["borough"]]
 }
 
-function plot_map(svg, data, recoloring_function=default_coloring) {
+function plot_map(svg, data, recoloring_function=default_coloring, on_mouse_over=handleMouseOver, on_mouse_out=handledMouseOut) {
     console.log("Plotting data...");
     let ny_zones = topojson.feature(data, {
         type: "GeometryCollection",
@@ -27,8 +29,8 @@ function plot_map(svg, data, recoloring_function=default_coloring) {
         .enter()
         .append("path")
         .attr("class", "zone")
-        .on("mouseover", handleMouseOver)
-        .on("mouseout", handledMouseOut)
+        .on("mouseover", on_mouse_over)
+        .on("mouseout", on_mouse_out)
         .attr("location_id", function (d) { return d.properties["LocationID"] })
         .attr("borough", function (d) { return d.properties["borough"] })
         .attr("zone", function (d) { return d.properties["zone"] })
@@ -38,37 +40,45 @@ function plot_map(svg, data, recoloring_function=default_coloring) {
 }
 
 function handleMouseOver() {  // Add interactivity
-    let infobox_div = d3.select("div.infobox");
+    let infobox_div = d3.select(".infobox");
     let selected_element = d3.select(this);
 
     let location_id = selected_element.attr("location_id");
     let zone = selected_element.attr("zone");
     let borough = selected_element.attr("borough");
-    let color = borough_color_switcher[borough];
+    let frequency = selected_element.attr("frequency");
+    let alpha = selected_element.attr("alpha");
 
-    infobox_div.style("color", color);
-    infobox_div.select(".zone_location_id").append("text").text(location_id);
-    infobox_div.select(".zone_name").append("text").text(zone);
-    infobox_div.select(".zone_borough").append("text").text(borough.toUpperCase());
+    infobox_div.select("#zone_location_id").append("text").text(location_id);
+    infobox_div.select("#zone_name").append("text").text(zone);
+    infobox_div.select("#zone_borough").append("text").text(borough);
+    infobox_div.select("#frequency").append("text").text(frequency);
+    infobox_div.select("#alpha").append("text").text(alpha);
+
+    infobox_div.classed("hidden_el", false);
+
 }
 
 function handledMouseOut() {
-    let infobox_div = d3.select("div.infobox");
-    infobox_div.selectAll("br").remove();
+    let infobox_div = d3.select(".infobox");
+    infobox_div.classed("hidden_el", true);
     infobox_div.selectAll("text").remove();
 }
 
-let colorize_map = function (svg, data, month, dow, ts, prop, excluded=[]) {
+let compute_data = function (svg, data, month, dow, ts, prop, excluded=[]) {
+
+    console.log("Submitted values:", month, dow, ts, prop, excluded);
 
     let result = [];
     let max = 0;
 
     console.log("Computing data...");
+
     data.forEach(function(trip){
 
         let current_id = (prop === "pull") ? trip["PULocationID"] : trip["DOLocationID"] ;
 
-        if (excluded.indexOf(current_id) === -1) { //zone not excluded
+        if (excluded.indexOf(parseInt(current_id)) === -1) { //zone not excluded
 
             if(month !== "-1" && month !== trip["Month"].toString())
                 return;
@@ -86,24 +96,8 @@ let colorize_map = function (svg, data, month, dow, ts, prop, excluded=[]) {
                 max = parseInt(result[current_id]);
         }
     });
+    console.log("Computing done...");
 
-    console.log("Recoloring...");
-
-    svg.selectAll(".zone").attr("fill", function(node){
-        let location_id = node["properties"]["LocationID"];
-        if(excluded.indexOf(location_id) === -1){ // zone not excluded
-            let value_to_iterpolate = result[location_id]/max;
-            if(prop==="pull")
-                return d3.interpolateRdYlGn(value_to_iterpolate);
-                // return d3.interpolateOranges(value_to_iterpolate);
-            return d3.interpolateRdYlBu(value_to_iterpolate);
-            // return d3.interpolatePurples(value_to_iterpolate);
-        }
-        else{
-            return "black";
-        }
-    });
-
-    console.log("Recoloring done...");
+    return {frequencies: result, max_frequency: max};
 
 };

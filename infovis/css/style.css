@@ -94,3 +94,11 @@ h1, h2, h3, h4, h5, h6 {
 .nav-link:hover {
     color: rgba(255,255,255, 0.8);
 }
+
+.excluded_zone_tr{
+    background-color: pink;
+}
+
+.hidden_el{
+    display:none;
+}

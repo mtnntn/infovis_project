@@ -18,17 +18,9 @@
     <link href="css/style.css" rel="stylesheet">
 
     <style>
-        .zone_location_id{
-            font-size: 2em;
-            margin-left: 2em;
-        }
-        .zone_name{
-            font-size: 2em;
-            margin-left: 2em;
-        }
-        .zone_borough{
-            font-size: 2em;
-            margin-left: 2em;
+        .infobox{
+            text-align: left;
+            margin-top: 2em;
         }
     </style>
     <!-- /Custom styles (optional) -->
@@ -72,10 +64,43 @@
 <!--Map-->
 <div class="container-fluid">
     <div class="row" id="main-container">
-        <div class="col-lg-2 infobox">
-            <div class="zone_location_id row"></div>
-            <div class="zone_name row"></div>
-            <div class="zone_borough row"></div>
+        <div class="col-lg-2">
+            <div class="row">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-10">
+                    <svg class="row legend_svg"></svg>
+                </div>
+            </div>
+            <div class="row infobox hidden_el">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Location ID: </th>
+                            <td id="zone_location_id"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Borough: </th>
+                            <td id="zone_name"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name: </th>
+                            <td id="zone_borough"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Frequency: </th>
+                            <td id="frequency"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Alpha: </th>
+                            <td id="alpha"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
         <div class="col-lg-7">
             <svg class="map_svg" width="1260" height="900"></svg>
@@ -85,9 +110,9 @@
                 <div class="col-lg-1"></div>
                 <div class="col-lg-9">
                     <div class="row">
-                        <p>Change the form inputs and the map will be colored according to the selection.<p>
-                        <p>By clicking onto a specific zone you'll have the possibility to exclude the selected one from the analysis.</p>
-                        <p>Over a zone to display more information or double click in order to see a details page.</p>
+                        <p>Change the form inputs and click submit to recolor the map according to the inputs.<p>
+                        <p>Click onto a specific zone in order to exclude it from the analysis.</p>
+                        <p>Over a zone to display the following information: Zone Id, Zone Name, Borough, Frequency (According to the selected filters) .</p>
                     </div>
                 </div>
                 <div class="col-lg-2"></div>
@@ -147,19 +172,20 @@
                             </select>
                         </div>
                         <div class="col" style="margin-top: 1em;">
-                            <button type="button" id="form_submit" class="btn btn-amber btn-lg btn-block">Submit</button>
+                            <button type="button" id="form_submit" class="btn btn-outline-warning btn-lg btn-block">Submit</button>
                         </div>
                     </form>
                 </div>
                 <div class="col-lg-2"></div>
             </div>
-            <div class="row">
+            <div class="row" style="margin-top: 2em;">
                 <div class="col-lg-1"></div>
                 <div class="col-lg-9">
-                    <svg class="row legend_svg"></svg>
-                    <div class="row excluded_zones_div">
-                        Excluded zones:
-                        <ul class="col-lg-12 excluded_zones_list"></ul>
+                    <div class="row excluded_zones_div hidden_el">
+                        Excluded Zones:
+                        <table class="table">
+                            <tbody id="excluded_zones_list"> </tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="col-lg-2"></div>

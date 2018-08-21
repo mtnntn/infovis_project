@@ -48,7 +48,7 @@ function update_info(svg, dataset_data, excluded_zones){
 
     let computed_data = compute_data(svg, dataset_data, month_v, dow_v, ts_v, prop_v, excluded_zones);
 
-    // let table_container = d3.select("#table-container");
+    let table_container = d3.select("#table-container");
     // initialize_table(table_container);
 
     console.log("Recoloring Map and Updating Table...");
@@ -58,11 +58,12 @@ function update_info(svg, dataset_data, excluded_zones){
         let borough = node["properties"]["borough"];
 
         if(excluded_zones.indexOf(location_id) === -1){ // zone not excluded
-            let value_to_iterpolate = computed_data["frequencies"][location_id]/computed_data["max_frequency"];
-            // append_tr_to_table(table_container, location_id, borough, zone, computed_data["frequencies"][location_id]);
+            let current_location_frequency = computed_data["frequencies"][location_id];
+            let alpha = get_alpha_value(current_location_frequency, computed_data["max_frequency"]);
+            // append_tr_to_table(table_container, location_id, borough, zone, current_location_frequency, alpha);
             if(prop_v==="pull")
-                return d3.interpolateRdYlGn(value_to_iterpolate);
-            return d3.interpolateRdYlBu(value_to_iterpolate);
+                return d3.interpolateRdYlGn(alpha);
+            return d3.interpolateRdYlBu(alpha);
         }
         else{
             // append_tr_to_table(table_container, location_id, borough, zone, -1);
@@ -77,8 +78,8 @@ function update_info(svg, dataset_data, excluded_zones){
         let location_id = node["properties"]["LocationID"];
         if(excluded_zones.indexOf(location_id)!==-1) // zone is excluded because in the array of the excluded zones
             return -1;
-        return (computed_data["frequencies"][location_id]/computed_data["max_frequency"]).toFixed(3);
-    });
+        return get_alpha_value(computed_data["frequencies"][location_id], computed_data["max_frequency"]);
+    }).attr("prev_fill", null);
     console.log("Recoloring Map and Updating Table done...");
 
     append_legend(legend_svg, prop_v);
@@ -95,19 +96,21 @@ function initialize_table(table_container){
     table_head_tr.append("th").attr("scope", "col").text("Borough");
     table_head_tr.append("th").attr("scope", "col").text("Zone");
     table_head_tr.append("th").attr("scope", "col").text("Frequency");
+    table_head_tr.append("th").attr("scope", "col").text("Alpha");
     table_head_tr.append("th").attr("scope", "col").text("Actions");
     table.append("tbody");
 
     console.log("Table creation done...");
 }
 
-function append_tr_to_table(table_container, location_id, borough, zone, frequency){
+function append_tr_to_table(table_container, location_id, borough, zone, frequency, alpha){
     let table_body = table_container.select("tbody");
     let current_tr = table_body.append("tr");
     current_tr.append("td").text(location_id);
     current_tr.append("td").text(borough);
     current_tr.append("td").text(zone);
     current_tr.append("td").text(frequency);
+    current_tr.append("td").text(alpha);
     let actions = current_tr.append("td").append("div").classed("btn-group-sm", true).attr("role", "group");
     actions.append("button").classed("btn btn-warning", true).text("Exclude");
     actions.append("button").classed("btn btn-info", true).text("Show");
@@ -119,6 +122,7 @@ function exclude_zone(svg, d3_obj, zone_to_exclude, excluded_zones){
     let zone_to_exclude_index = excluded_zones.indexOf(zone_to_exclude);
 
     if(zone_to_exclude_index === -1){ //the zone should be added to the list
+        d3_obj.attr("prev_fill", d3_obj.attr("fill"));
         d3_obj.attr("fill", EXCLUDED_ZONE_COLOR);
         d3_obj.append("title").text("Excluded zone");
         let li_text = [d3_obj.attr("location_id"), d3_obj.attr("borough"), d3_obj.attr("zone")].join(" - ");
@@ -126,7 +130,8 @@ function exclude_zone(svg, d3_obj, zone_to_exclude, excluded_zones){
         excluded_zones.push(zone_to_exclude);
     }
     else{
-        d3_obj.attr("fill", "black");
+        d3_obj.attr("fill", d3_obj.attr("prev_fill"));
+        d3_obj.attr("prev_fill", null);
         d3_obj.selectAll("title").remove();
         excluded_zones_list.select("tr[location_id='"+d3_obj.attr("location_id")+"']").remove();
         excluded_zones.splice(zone_to_exclude_index, 1);
@@ -169,4 +174,8 @@ function append_legend(svg, property){
     g.attr("transform", "translate(0,80)");
 
     console.log("Legend appended...");
+}
+
+function get_alpha_value(frequency, max){
+    return (frequency/max).toFixed(3)
 }

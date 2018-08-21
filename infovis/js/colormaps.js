@@ -49,7 +49,7 @@ function update_info(svg, dataset_data, excluded_zones){
     let computed_data = compute_data(svg, dataset_data, month_v, dow_v, ts_v, prop_v, excluded_zones);
 
     let table_container = d3.select("#table-container");
-    // initialize_table(table_container);
+    initialize_table(table_container);
 
     console.log("Recoloring Map and Updating Table...");
     svg.selectAll(".zone").attr("fill", function(node){
@@ -60,10 +60,8 @@ function update_info(svg, dataset_data, excluded_zones){
         if(excluded_zones.indexOf(location_id) === -1){ // zone not excluded
             let current_location_frequency = computed_data["frequencies"][location_id];
             let alpha = get_alpha_value(current_location_frequency, computed_data["max_frequency"]);
-            // append_tr_to_table(table_container, location_id, borough, zone, current_location_frequency, alpha);
-            if(prop_v==="pull")
-                return d3.interpolateRdYlGn(alpha);
-            return d3.interpolateRdYlBu(alpha);
+            append_tr_to_table(table_container, prop_v, location_id, borough, zone, current_location_frequency, alpha);
+            return get_interpolated_color(prop_v, alpha);
         }
         else{
             // append_tr_to_table(table_container, location_id, borough, zone, -1);
@@ -97,13 +95,14 @@ function initialize_table(table_container){
     table_head_tr.append("th").attr("scope", "col").text("Zone");
     table_head_tr.append("th").attr("scope", "col").text("Frequency");
     table_head_tr.append("th").attr("scope", "col").text("Alpha");
-    table_head_tr.append("th").attr("scope", "col").text("Actions");
+    table_head_tr.append("th").attr("scope", "col").attr("width", "2em");
+    // table_head_tr.append("th").attr("scope", "col").text("Actions");
     table.append("tbody");
 
     console.log("Table creation done...");
 }
 
-function append_tr_to_table(table_container, location_id, borough, zone, frequency, alpha){
+function append_tr_to_table(table_container, prop_v, location_id, borough, zone, frequency, alpha){
     let table_body = table_container.select("tbody");
     let current_tr = table_body.append("tr");
     current_tr.append("td").text(location_id);
@@ -111,9 +110,10 @@ function append_tr_to_table(table_container, location_id, borough, zone, frequen
     current_tr.append("td").text(zone);
     current_tr.append("td").text(frequency);
     current_tr.append("td").text(alpha);
-    let actions = current_tr.append("td").append("div").classed("btn-group-sm", true).attr("role", "group");
-    actions.append("button").classed("btn btn-warning", true).text("Exclude");
-    actions.append("button").classed("btn btn-info", true).text("Show");
+    current_tr.append("td").style("background-color", get_interpolated_color(prop_v, alpha));
+    // let actions = current_tr.append("td").append("div").classed("btn-group-sm", true).attr("role", "group");
+    // actions.append("button").classed("btn btn-warning", true).text("Exclude");
+    // actions.append("button").classed("btn btn-info", true).text("Show");
 }
 
 function exclude_zone(svg, d3_obj, zone_to_exclude, excluded_zones){
@@ -178,4 +178,10 @@ function append_legend(svg, property){
 
 function get_alpha_value(frequency, max){
     return (frequency/max).toFixed(3)
+}
+
+function get_interpolated_color(property_val, alpha){
+    if(property_val==="pull")
+        return d3.interpolateRdYlGn(alpha);
+    return d3.interpolateRdYlBu(alpha);
 }

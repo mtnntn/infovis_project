@@ -65,11 +65,11 @@ function handledMouseOut() {
     infobox_div.selectAll("text").remove();
 }
 
-let compute_data = function (svg, data, month, dow, ts, prop, excluded=[]) {
+let compute_data = function (zones_info, data, month, dow, ts, prop, excluded=[]) {
 
     console.log("Submitted values:", month, dow, ts, prop, excluded);
 
-    let result = [];
+    let result = zones_info;
     let max = 0;
 
     console.log("Computing data...");
@@ -78,26 +78,46 @@ let compute_data = function (svg, data, month, dow, ts, prop, excluded=[]) {
 
         let current_id = (prop === "pull") ? trip["PULocationID"] : trip["DOLocationID"] ;
 
-        if (excluded.indexOf(parseInt(current_id)) === -1) { //zone not excluded
-
+        if (zones_info[current_id] !== undefined && excluded.indexOf(parseInt(current_id)) === -1){
             if(month !== "-1" && month !== trip["Month"].toString())
                 return;
             if(dow !== "-1" && dow !== trip["DayOfWeek"].toString())
                 return;
             if(ts !== "-1" && ts !== trip["TimeSlot"].toString())
                 return;
+            //if(borough !== "-1" && borough !== result[current_id]["borough"])
+            //    return;
 
-            if (result[current_id] == null || result[current_id] === undefined)
-                result[current_id] = 0;
+            if (result[current_id]["frequency"] === null || result[current_id]["frequency"] === undefined) {
+                result[current_id]["frequency"] = 0;
+            }
 
-            result[current_id] += parseInt(trip["Frequency"]);
+            result[current_id]["frequency"] += parseInt(trip["Frequency"]);
 
-            if(result[current_id] > max)
-                max = parseInt(result[current_id]);
+            if(result[current_id]["frequency"] > max)
+                max = parseInt(result[current_id]["frequency"]);
         }
     });
+
+    Object.keys(result).forEach(function(d){
+        let loc_id = result[d]["location_id"];
+        //let borough_cond = borough !== -1 && result[d]["borough"] !== borough;
+        if(excluded_zones.indexOf(parseInt(loc_id)) !== -1) { // zone is excluded
+            result[d]["frequency"] = -1;
+            result[d]["alpha"] = -1;
+        }
+        else{
+            result[d]["alpha"] = get_alpha_value(result[d]["frequency"], max);
+        }
+    });
+
+
     console.log("Computing done...");
 
     return {frequencies: result, max_frequency: max};
 
 };
+
+function get_alpha_value(frequency, max){
+    return (frequency/max).toFixed(3)
+}

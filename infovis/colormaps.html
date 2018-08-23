@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Infovis</title>
+    <link rel="shortcut icon" href="img/favicon.png" type="image/png"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Styles -->
+    <!-- MDB -->
+    <!-- Material Design for Bootstrap fonts and icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+    <!-- Bootstrap Material Design -->
+    <link href="vendor/bmd/css/bootstrap-material-design.css" rel="stylesheet">
+    <!-- /MDB -->
+    <!-- Custom styles (optional) -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .infobox{
+            text-align: left;
+            margin-top: 2em;
+        }
+    </style>
+    <!-- /Custom styles (optional) -->
+
+
+    <!-- /Styles -->
+
+</head>
+<body>
+
+<!-- Navigation -->
+<ul class="nav custom_nav justify-content-center py-4">
+    <li class="nav-item">
+        <a class="nav-link white-text" href="dataset_explanation.html">Project</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link white-text active" href="colormaps.html">Color maps</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link white-text" href="#!">TBA</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link white-text" href="#!">TBA</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link white-text" href="about_us.html">About Us</a>
+    </li>
+</ul>
+<!-- /Navigation -->
+
+<!-- Start your project here-->
+
+<!-- Panel -->
+<section class="text-center my-5">
+    <!-- Section heading -->
+    <h2 class="h1-responsive my-5">Color Maps</h2>
+    <!-- Section description -->
+</section>
+<!-- /Panel -->
+
+<!--Map-->
+<div class="container-fluid">
+    <div class="row" id="main-container">
+        <div class="col-lg-2">
+            <div class="row">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-10">
+                    <div class="row" id="legend_text"></div>
+                    <svg class="row legend_svg"></svg>
+                </div>
+            </div>
+            <div class="row infobox hidden_el">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Location ID: </th>
+                            <td id="zone_location_id"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Borough: </th>
+                            <td id="zone_borough"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name: </th>
+                            <td id="zone_name"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Frequency: </th>
+                            <td id="frequency"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Alpha: </th>
+                            <td id="alpha"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-lg-7">
+            <div class="row">
+                <svg class="map_svg" width="1260" height="900"></svg>
+            </div>
+            <div class="row">
+                <div class="container-fluid" id="table-container"> </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9">
+                    <div class="row">
+                        <p>Change the form inputs and click submit to recolor the map according to the inputs.<p>
+                        <p>Click onto a specific zone in order to exclude it from the analysis.</p>
+                        <p>Over a zone to display the following information: Zone Id, Zone Name, Borough, Frequency (According to the selected filters) .</p>
+                    </div>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9 text-center">
+                    <form>
+                        <div class="col">
+                            <label for="borough" class="sr-only">Borough</label>
+                            <select class="form-control" id="borough" name="borough" size="6" multiple></select>
+                        </div>
+                        <div class="col">
+                            <label for="month" class="sr-only">Month</label>
+                            <select class="form-control" id="month" name="month"></select>
+                        </div>
+                        <div class="col">
+                            <label for="dow" class="sr-only">Day Of The Week</label>
+                            <select class="form-control" id="dow" name="dow"> </select>
+                        </div>
+                        <div class="col">
+                            <label for="ts" class="sr-only">Time Slot</label>
+                            <select class="form-control" id="ts" name="ts"></select>
+                        </div>
+                        <div class="col">
+                            <label for="property" class="sr-only">Property</label>
+                            <select class="form-control" id="property" name="property"></select>
+                        </div>
+                        <div class="col" style="margin-top: 1em;">
+                            <button type="button" id="form_submit" class="btn btn-outline-warning btn-lg btn-block">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+            <div class="row" style="margin-top: 2em;">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-9">
+                    <div class="row excluded_zones_div hidden_el">
+                        Excluded Zones:
+                        <table class="table">
+                            <tbody id="excluded_zones_list"> </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/Map-->
+
+<!-- /Start your project here-->
+
+<!-- Javascript dependencies -->
+<!-- jQuery -->
+<script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
+<!-- /jQuery -->
+<!-- popperjs -->
+<script type="text/javascript" src="vendor/popperjs/js/popper-1.12.6.js"></script>
+<!-- /popperjs -->
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="vendor/bmd/js/bootstrap-material-design.js"></script>
+<!-- /MDB core JavaScript -->
+<!-- Optional js sources-->
+
+<!-- /Optional js sources-->
+<!-- d3.js-->
+<script type="text/javascript" src="vendor/d3/d3.js"></script>
+<!-- /d3.js-->
+<script type="text/javascript" src="vendor/d3/d3-scale-chromatic.v1.min.js"></script>
+<script type="text/javascript" src="vendor/d3/topojson.v2.min.js"></script>
+<script type="text/javascript" src="js/colormaps_utils.js"></script>
+<script type="text/javascript" src="js/colormaps.js"></script>
+
+<!-- /Javascript dependencies -->
+
+
+</body>
+
+</html>

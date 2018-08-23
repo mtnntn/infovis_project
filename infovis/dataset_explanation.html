@@ -17,24 +17,51 @@
     <!-- Custom styles (optional) -->
     <link href="css/style.css" rel="stylesheet">
     <!-- /Custom styles (optional) -->
+    <style>
+
+        .title{
+            font-family: "Raleway-Bold";
+            font-size: 2em;
+        }
+
+        .subtitle{
+            font-family: "Raleway-Thin";
+            font-size: 1em;
+        }
+
+        .zone_location_id{
+            font-family: "Raleway-Heavy";
+            font-size: 6em;
+        }
+
+        .zone_name {
+            font-family: "Raleway-Heavy";
+            font-size: 3.8em;
+        }
+
+        .zone_borough{
+            font-family: "Raleway-Regular";
+            font-size: 2.6em;
+        }
+
+    </style>
     <!-- /Styles -->
-    
 </head>
 <body>
 
 <!-- Navigation -->
-<ul class="nav justify-content-center amber darken-1 lighten-4 py-4">
+<ul class="nav custom_nav justify-content-center py-4">
     <li class="nav-item">
-        <a class="nav-link white-text active" href="#!">TBA</a>
+        <a class="nav-link white-text" href="dataset_explanation.html">Project</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link white-text active" href="colormaps.html">Color maps</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="#!">TBA</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="#!">TBA</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link white-text" href="dataset_explanation.html">Data</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="about_us.html">About Us</a>
@@ -46,28 +73,30 @@
 <!-- Start your project here-->
 
 <section class="text-center my-5">
-
     <!-- Section heading -->
-    <h2 class="h1-responsive font-weight-bold my-5">NYC Taxi & Limousine Commission dataset </h2>
+    <h2 class="title my-5">NYC Taxi & Limousine Commission dataset </h2>
     <!-- Section description -->
-    <p class="grey-text w-responsive mx-auto mb-5"></p>
-
-    <!-- Grid row -->
-    <div class="row">
-
-
-
-    </div>
-    <!-- Grid row -->
-
+    <p class="grey-text w-responsive mx-auto mb-5"> Select a zone to get more information!</p>
 </section>
-<!--/.Panel-->
+
+<div class="container-fluid" id="main-container">
+    <div class="row">
+        <div class="col-lg-2"> </div>
+        <div class="col-lg-3 infobox">
+            <div class="zone_location_id row"></div>
+            <div class="zone_name row"></div>
+            <div class="zone_borough row"></div>
+        </div>
+        <div class="col-lg-7">
+            <svg class="map"></svg>
+        </div>
+    </div>
+</div>
+
+
 <!-- /Start your project here-->
 
 <!-- Javascript dependencies -->
-<!-- d3.js-->
-<script type="text/javascript" src="vendor/d3/d3.min.js"></script>
-<!-- /d3.js-->
 <!-- jQuery -->
 <script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
 <!-- /jQuery -->
@@ -78,9 +107,13 @@
 <script type="text/javascript" src="vendor/bmd/js/bootstrap-material-design.js"></script>
 <!-- /MDB core JavaScript -->
 
-<!-- Optional js sources-->
-
 <!-- /Optional js sources-->
+<!-- d3.js-->
+<script type="text/javascript" src="vendor/d3/d3.js"></script>
+<!-- /d3.js-->
+<script type="text/javascript" src="vendor/d3/d3-scale-chromatic.v1.min.js"></script>
+<script type="text/javascript" src="vendor/d3/topojson.v2.min.js"></script>
+<script type="text/javascript" src="js/dataset_explanation.js"></script>
 
 <!-- /Javascript dependencies -->
 

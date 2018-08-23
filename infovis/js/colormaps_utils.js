@@ -7,7 +7,51 @@ var borough_color_switcher = {
     "EWR" : d3.rgb(155, 0, 198, 0.55),
 };
 
+var BOROUGHS = ["Bronx", "Brooklyn", "EWR", "Manhattan", "Queens", "Staten Island"];
+
 var EXCLUDED_ZONE_COLOR = "fuchsia";
+
+var DOWS = [
+    {value:"-1", label: "All" },
+    {value: "0", label: "Sunday"},
+    {value: "1", label: "Monday"},
+    {value: "2", label: "Tuesday"},
+    {value: "3", label: "Wednesday"},
+    {value: "4", label: "Thursday"},
+    {value: "5", label: "Friday"},
+    {value: "6", label: "Saturday"}
+];
+
+var MONTHS = [
+    {value:"-1", label:"All"},
+    {value:"1" , label:"January"},
+    {value:"2" , label:"February"},
+    {value:"3" , label:"March"},
+    {value:"4" , label:"April"},
+    {value:"5" , label:"May "},
+    {value:"6" , label:"June"},
+    {value:"7" , label:"July"},
+    {value:"8" , label:"August"},
+    {value:"9" , label:"September"},
+    {value:"10", label:"October"},
+    {value:"11", label:"November"},
+    {value:"12", label:"December"}
+];
+
+var PROPERTIES = [
+     {value:"pull", label:"Pull Location"},
+     {value:"drop", label:"Drop-off Location"}
+]
+
+var TS = [
+    {value: "-1", label: "All"},
+    {value:"TS1", label: "06.00 - 09.00"},
+    {value:"TS2", label: "09.00 - 12.00"},
+    {value:"TS3", label: "12.00 - 17.00"},
+    {value:"TS4", label: "17.00 - 20.00"},
+    {value:"TS5", label: "20.00 - 24.00"},
+    {value:"TS6", label: "24.00 - 06.00"}
+];
 
 function default_coloring(zone_data){
     return borough_color_switcher[zone_data.properties["borough"]]
@@ -65,52 +109,58 @@ function handledMouseOut() {
     infobox_div.selectAll("text").remove();
 }
 
-let compute_data = function (zones_info, data, month, dow, ts, prop, excluded=[]) {
+function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
     console.log("Submitted values:", month, dow, ts, prop, excluded);
 
-    let result = zones_info;
+    let result = {};
     let max = 0;
 
-    console.log("Computing data...");
+    Object.keys(zones_info).forEach(function (k) {
+        let elem = {
+            borough : zones_info[k]["borough"],
+            location_id: zones_info[k]["location_id"],
+            zone: zones_info[k]["zone"],
+            frequency : 0,
+            alpha: 0.0,
+            color: get_interpolated_color(prop, 0.0)
+        };
+        result[zones_info[k]["location_id"]] = elem;
+    });
 
+    console.log("Computing data...");
     data.forEach(function(trip){
 
         let current_id = (prop === "pull") ? trip["PULocationID"] : trip["DOLocationID"] ;
 
         if (zones_info[current_id] !== undefined && excluded.indexOf(parseInt(current_id)) === -1){
-            if(month !== "-1" && month !== trip["Month"].toString())
-                return;
-            if(dow !== "-1" && dow !== trip["DayOfWeek"].toString())
-                return;
-            if(ts !== "-1" && ts !== trip["TimeSlot"].toString())
-                return;
-            //if(borough !== "-1" && borough !== result[current_id]["borough"])
-            //    return;
 
-            if (result[current_id]["frequency"] === null || result[current_id]["frequency"] === undefined) {
-                result[current_id]["frequency"] = 0;
+            let break_by_month = month !== "-1" && month !== trip["Month"].toString();
+            let break_by_dow   = dow   !== "-1" &&   dow !== trip["DayOfWeek"].toString();
+            let break_by_ts    = ts    !== "-1" &&    ts !== trip["TimeSlot"].toString();
+
+            if(! (break_by_month || break_by_dow || break_by_ts) ){
+
+                result[current_id]["frequency"] += parseInt(trip["Frequency"]);
+
+                if(result[current_id]["frequency"] > max)
+                    max = parseInt(result[current_id]["frequency"]);
             }
-
-            result[current_id]["frequency"] += parseInt(trip["Frequency"]);
-
-            if(result[current_id]["frequency"] > max)
-                max = parseInt(result[current_id]["frequency"]);
         }
     });
 
     Object.keys(result).forEach(function(d){
         let loc_id = result[d]["location_id"];
-        //let borough_cond = borough !== -1 && result[d]["borough"] !== borough;
         if(excluded_zones.indexOf(parseInt(loc_id)) !== -1) { // zone is excluded
             result[d]["frequency"] = -1;
             result[d]["alpha"] = -1;
+            result[d]["color"] = EXCLUDED_ZONE_COLOR;
         }
         else{
             result[d]["alpha"] = get_alpha_value(result[d]["frequency"], max);
+            result[d]["color"] = get_interpolated_color(prop, result[d]["alpha"]);
         }
     });
-
 
     console.log("Computing done...");
 
@@ -120,4 +170,10 @@ let compute_data = function (zones_info, data, month, dow, ts, prop, excluded=[]
 
 function get_alpha_value(frequency, max){
     return (frequency/max).toFixed(3)
+}
+
+function get_interpolated_color(property_val, alpha){
+    if(property_val==="pull")
+        return d3.interpolateRdYlGn(alpha);
+    return d3.interpolateRdYlBu(alpha);
 }

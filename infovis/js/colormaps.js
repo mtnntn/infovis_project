@@ -5,7 +5,7 @@ let height = +svg.attr("height");
 /* Form fields */
 let month = d3.select("#month");
 let prop = d3.select("#property");
-//let borough = d3.select("#borough");
+let borough = d3.select("#borough");
 let dow = d3.select("#dow");
 let ts = d3.select("#ts");
 
@@ -14,15 +14,14 @@ let legend_svg = d3.select("svg.legend_svg");
 
 /* Zone exlcuded from the computation */
 let excluded_zones = [];
+let excluded_boroughs = [];
 
+/* Default Sorting for the table*/
 let sorting_asc = true;
 
-Promise.all([d3.json("data/geodata/ny_zones.json")]).then(function (map_data) {
+form_reset();
 
-    d3.select("#month").attr("value", "-1");
-    d3.select("#dow").attr("value", "-1");
-    d3.select("#ts").attr("value", "-1");
-    d3.select("#property").attr("value", "pull");
+Promise.all([d3.json("data/geodata/ny_zones.json")]).then(function (map_data) {
 
     Promise.all([d3.tsv("data/month_dow_ts_puloc_doloc.csv")]).then(function(dataset_data){
 
@@ -55,42 +54,26 @@ Promise.all([d3.json("data/geodata/ny_zones.json")]).then(function (map_data) {
 function update_info(svg, zones_info, dataset_data, excluded_zones){
     let month_v = month.node().value;
     let prop_v = prop.node().value;
-    //let borough_v = borough.node().value;
     let dow_v = dow.node().value;
     let ts_v = ts.node().value;
+    excluded_boroughs = get_selected_boroughs();
 
     let computed_data = compute_data(zones_info, dataset_data, month_v, dow_v, ts_v, prop_v, excluded_zones);
 
     console.log("Recoloring Map...");
-
-    let table_container = d3.select("#table-container");
-
     svg.selectAll(".zone").attr("fill", function(node){
         let location_id = node["properties"]["LocationID"];
-        let zone_info_from_computed_data = computed_data["frequencies"][location_id];
-        if(excluded_zones.indexOf(location_id) === -1){ // zone not excluded
-            let interpolated_color = get_interpolated_color(prop_v, zone_info_from_computed_data["alpha"]);
-            zone_info_from_computed_data["color"] = interpolated_color;
-            return interpolated_color;
-        }
-        else{
-            zone_info_from_computed_data["color"] = EXCLUDED_ZONE_COLOR;
-            return EXCLUDED_ZONE_COLOR;
-        }
+        return computed_data["frequencies"][location_id]["color"];
     }).attr("frequency", function(node){
         let location_id = node["properties"]["LocationID"];
-        if(excluded_zones.indexOf(location_id)!==-1) // zone is excluded because in the array of the excluded zones
-            return -1;
         return computed_data["frequencies"][location_id]["frequency"];
     }).attr("alpha", function(node){
         let location_id = node["properties"]["LocationID"];
-        if(excluded_zones.indexOf(location_id)!==-1) // zone is excluded because in the array of the excluded zones
-            return -1;
-        return get_alpha_value(computed_data["frequencies"][location_id]["frequency"], computed_data["max_frequency"]);
+        return computed_data["frequencies"][location_id]["alpha"];
     }).attr("prev_fill", null);
     console.log("Recoloring Map done...");
 
-    update_table(table_container, computed_data["frequencies"]);
+    update_table(d3.select("#table-container"), computed_data["frequencies"]);
     append_legend(legend_svg, prop_v);
 }
 
@@ -209,7 +192,7 @@ function append_legend(svg, property) {
 
     let g = svg.append("g");
 
-    g.append("text").attr("y", "-2em").text(text);
+    d3.select("#legend_text").text(text);
 
     g.selectAll("rect")
         .data(c.range())
@@ -224,13 +207,39 @@ function append_legend(svg, property) {
             return ((c.range().indexOf(d)) * 1.5).toString() + "em";
         });
 
-    g.attr("transform", "translate(0,80)");
+    g.attr("transform", "translate(0,20)");
 
     console.log("Legend appended...");
 }
 
-function get_interpolated_color(property_val, alpha){
-    if(property_val==="pull")
-        return d3.interpolateRdYlGn(alpha);
-    return d3.interpolateRdYlBu(alpha);
+function form_reset(){
+    console.log("Form Resetting...");
+    excluded_boroughs = [];
+    month.selectAll("option").data(MONTHS).enter().append("option").attr("value", function(d){return d.value;}).text(function(d){return d.label;});
+    dow.selectAll("option").data(DOWS).enter().append("option").attr("value", function(d){return d.value;}).text(function(d){return d.label;});
+    ts.selectAll("option").data(TS).enter().append("option").attr("value", function(d){return d.value;}).text(function(d){return d.label;});
+    prop.selectAll("option").data(PROPERTIES).enter().append("option").attr("value", function(d){return d.value;}).text(function(d){return d.label;});
+    borough.selectAll("option").data(BOROUGHS).enter().append("option").attr("value", function(d){return d;}).text(function(d){return d;});
+
+    borough.on("change", function (d) {
+        excluded_boroughs = get_selected_boroughs();
+
+        svg.selectAll(".zone").each(function (d) {
+            let zone_borough = d.properties.borough;
+            let zone_id = d.properties["LocationID"];
+
+            let zone_excluded = excluded_zones.indexOf(zone_id) !== -1;
+            let borough_excluded = excluded_boroughs.indexOf(zone_borough) !== -1;
+
+            // se il borough è escluso e la zona non è esclusa > escludi la zona || (!borough_excluded && zone_excluded)
+            if( (borough_excluded && !zone_excluded) || (!borough_excluded && zone_excluded) ){
+                exclude_zone(legend_svg, d3.select(this), zone_id, excluded_zones);
+            }
+        });
+    });
+    console.log("Form Resetting done...");
+}
+
+function get_selected_boroughs() {
+    return Array.from(borough.node().selectedOptions).map(function(d){return d.value;});
 }

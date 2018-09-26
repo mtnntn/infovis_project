@@ -91,12 +91,14 @@ function handleMouseOver() {  // Add interactivity
     let zone = selected_element.attr("zone");
     let borough = selected_element.attr("borough");
     let frequency = selected_element.attr("frequency");
+    let self_trips = selected_element.attr("self_trips");
     let alpha = selected_element.attr("alpha");
 
     infobox_div.select("#zone_location_id").append("text").text(location_id);
     infobox_div.select("#zone_name").append("text").text(zone);
     infobox_div.select("#zone_borough").append("text").text(borough);
     infobox_div.select("#frequency").append("text").text(frequency);
+    infobox_div.select("#self_trips").append("text").text(self_trips);
     infobox_div.select("#alpha").append("text").text(alpha);
 
     infobox_div.classed("hidden_el", false);
@@ -123,7 +125,10 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
             zone: zones_info[k]["zone"],
             frequency : 0,
             alpha: 0.0,
-            color: get_interpolated_color(prop, 0.0)
+            color: get_interpolated_color(prop, 0.0),
+            self_trips: 0,
+            to:{}, // {zone_id, frequency of trips from elem.location_id and the location that has this key as id }
+            from:{} // {zone_id, frequency of trips from the location that has this key as id and elem.location_id }
         };
         result[zones_info[k]["location_id"]] = elem;
     });
@@ -131,9 +136,14 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
     console.log("Computing data...");
     data.forEach(function(trip){
 
-        let current_id = (prop === "pull") ? trip["PULocationID"] : trip["DOLocationID"] ;
+        let trip_pull_location = trip["PULocationID"];
+        let trip_drop_location = trip["DOLocationID"];
 
-        if (zones_info[current_id] !== undefined && excluded.indexOf(parseInt(current_id)) === -1){
+        let current_id = (prop === "pull") ? trip_pull_location : trip_drop_location ;
+
+        let go_on_condition = zones_info[trip_pull_location] !== undefined && zones_info[trip_drop_location] !== undefined && excluded.indexOf(parseInt(trip_pull_location)) === -1 && excluded.indexOf(parseInt(trip_drop_location)) === -1;
+
+        if (go_on_condition){
 
             let break_by_month = month !== "-1" && month !== trip["Month"].toString();
             let break_by_dow   = dow   !== "-1" &&   dow !== trip["DayOfWeek"].toString();
@@ -143,8 +153,27 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
                 result[current_id]["frequency"] += parseInt(trip["Frequency"]);
 
-                if(result[current_id]["frequency"] > max)
+                if(result[current_id]["frequency"] > max){
                     max = parseInt(result[current_id]["frequency"]);
+                }
+
+                // UPDATE STATS For the zone.
+                if(trip_pull_location === trip_drop_location){
+                    result[trip_pull_location]["self_trips"] += parseInt(trip["Frequency"]);
+                }
+                else{
+                    //to => ids of the drop_location foreach trip
+                    if(! (trip_drop_location in result[trip_pull_location]["to"]) ){
+                        result[trip_pull_location]["to"][trip_drop_location] = 0;
+                    }
+                    result[trip_pull_location]["to"][trip_drop_location] += trip["Frequency"];
+
+                    //from => id
+                    if(!(trip_pull_location in result[trip_drop_location]["from"])){
+                        result[trip_drop_location]["from"][trip_pull_location] = 0;
+                    }
+                    result[trip_drop_location]["from"][trip_pull_location] += trip["Frequency"];
+                }
             }
         }
     });

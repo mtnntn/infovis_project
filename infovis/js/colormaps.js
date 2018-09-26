@@ -67,6 +67,9 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
     }).attr("frequency", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["frequency"];
+    }).attr("self_trips", function(node){
+        let location_id = node["properties"]["LocationID"];
+        return computed_data["frequencies"][location_id]["self_trips"];
     }).attr("alpha", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["alpha"];

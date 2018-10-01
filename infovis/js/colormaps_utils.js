@@ -63,7 +63,7 @@ function plot_map(svg, data, recoloring_function=default_coloring, on_mouse_over
         type: "GeometryCollection",
         geometries: data.objects["ny_zones"]["geometries"]
     });
-    let projections = d3.geoMercator().center([-73.94, 40.70]).scale(90000).translate([ (1260)/2, 900/2]);
+    let projections = d3.geoMercator().center([-73.94, 40.70]).scale(90000).translate([(1260)/2, 900/2]);
     let path = d3.geoPath(projections);
 
     svg.append("g")
@@ -119,7 +119,7 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
     let max = 0;
 
     Object.keys(zones_info).forEach(function (k) {
-        let elem = {
+        result[zones_info[k]["location_id"]] = {
             borough : zones_info[k]["borough"],
             location_id: zones_info[k]["location_id"],
             zone: zones_info[k]["zone"],
@@ -130,7 +130,6 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
             to:{}, // {zone_id, frequency of trips from elem.location_id and the location that has this key as id }
             from:{} // {zone_id, frequency of trips from the location that has this key as id and elem.location_id }
         };
-        result[zones_info[k]["location_id"]] = elem;
     });
 
     console.log("Computing data...");
@@ -141,7 +140,10 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
         let current_id = (prop === "pull") ? trip_pull_location : trip_drop_location ;
 
-        let go_on_condition = zones_info[trip_pull_location] !== undefined && zones_info[trip_drop_location] !== undefined && excluded.indexOf(parseInt(trip_pull_location)) === -1 && excluded.indexOf(parseInt(trip_drop_location)) === -1;
+        let go_on_condition = zones_info[trip_pull_location] !== undefined
+            && zones_info[trip_drop_location] !== undefined
+            && excluded.indexOf(parseInt(trip_pull_location)) === -1
+            && excluded.indexOf(parseInt(trip_drop_location)) === -1;
 
         if (go_on_condition){
 
@@ -151,7 +153,9 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
             if(! (break_by_month || break_by_dow || break_by_ts) ){
 
-                result[current_id]["frequency"] += parseInt(trip["Frequency"]);
+                let trip_frequency = parseInt(trip["Frequency"]);
+
+                result[current_id]["frequency"] += trip_frequency;
 
                 if(result[current_id]["frequency"] > max){
                     max = parseInt(result[current_id]["frequency"]);
@@ -159,20 +163,20 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
                 // UPDATE STATS For the zone.
                 if(trip_pull_location === trip_drop_location){
-                    result[trip_pull_location]["self_trips"] += parseInt(trip["Frequency"]);
+                    result[trip_pull_location]["self_trips"] += trip_frequency;
                 }
                 else{
                     //to => ids of the drop_location foreach trip
-                    if(! (trip_drop_location in result[trip_pull_location]["to"]) ){
+                    if(!(trip_drop_location in result[trip_pull_location]["to"]) ){
                         result[trip_pull_location]["to"][trip_drop_location] = 0;
                     }
-                    result[trip_pull_location]["to"][trip_drop_location] += trip["Frequency"];
+                    result[trip_pull_location]["to"][trip_drop_location] += trip_frequency;
 
                     //from => id
                     if(!(trip_pull_location in result[trip_drop_location]["from"])){
                         result[trip_drop_location]["from"][trip_pull_location] = 0;
                     }
-                    result[trip_drop_location]["from"][trip_pull_location] += trip["Frequency"];
+                    result[trip_drop_location]["from"][trip_pull_location] += trip_frequency;
                 }
             }
         }
@@ -205,4 +209,12 @@ function get_interpolated_color(property_val, alpha){
     if(property_val==="pull")
         return d3.interpolateRdYlGn(alpha);
     return d3.interpolateRdYlBu(alpha);
+}
+
+function show_tooltip(element_node){
+    $(element_node).tooltip("show");
+}
+
+function hide_tooltip(element_node){
+    $(element_node).tooltip("hide");
 }

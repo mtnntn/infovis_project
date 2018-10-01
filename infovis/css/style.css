@@ -102,3 +102,14 @@ h1, h2, h3, h4, h5, h6 {
 .hidden_el{
     display:none;
 }
+
+.zone_center_from, .zone_center_to, .zone_edge_from, .zone_edge_to {
+    fill: rgba(147, 151, 155, 0.8);
+    stroke: rgba(147, 151, 155, 0.7);
+}
+
+.active_path{
+    fill: rgb(18, 219, 252);
+    stroke: rgb(18, 219, 252);
+    stroke-width: 0.12em;
+}

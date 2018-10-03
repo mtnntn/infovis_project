@@ -111,51 +111,57 @@
             <div class="row">
                 <svg class="map_svg" width="1260" height="900"></svg>
             </div>
-            <div class="row">
-                <div class="container-fluid" id="table-container"> </div>
-            </div>
+            <!--<div class="row">-->
+                <!--<div class="container-fluid" id="table-container"> </div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+               <!--<div class="container-fluid" id="chord-container"> </div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+                <!--<div class="container-fluid" id="matrix-container"> </div>-->
+            <!--</div>-->
+            <div id="accordion" style="margin-top:2em;">
 
-            <!--<div id="accordion">-->
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Results table
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                        <div class="card-body table-responsive" id="table-container"> </div>
+                    </div>
+                </div>
 
-                <!--<div class="card">-->
-                    <!--<div class="card-header" id="headingOne">-->
-                        <!--<h5 class="mb-0">-->
-                            <!--<button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">-->
-                                <!--Results table-->
-                            <!--</button>-->
-                        <!--</h5>-->
-                    <!--</div>-->
-                    <!--<div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">-->
-                        <!--<div class="card-body" id="table-container"> </div>-->
-                    <!--</div>-->
-                <!--</div>-->
-
-                <!--<div class="card">-->
-                    <!--<div class="card-header" id="headingTwo">-->
-                        <!--<h5 class="mb-0">-->
-                            <!--<button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">-->
-                                <!--Graph-->
-                            <!--</button>-->
-                        <!--</h5>-->
-                    <!--</div>-->
-                    <!--<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">-->
-                        <!--<div class="card-body"> Data here!  </div>-->
-                    <!--</div>-->
-                <!--</div>-->
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Chord Graph
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                        <div class="card-body" id="chord-container"> </div>
+                    </div>
+                </div>
 
                 <!--<div class="card">-->
                     <!--<div class="card-header" id="headingThree">-->
                         <!--<h5 class="mb-0">-->
                             <!--<button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">-->
-                                <!--Statistics-->
+                                <!--Incidence Matrix-->
                             <!--</button>-->
                         <!--</h5>-->
                     <!--</div>-->
                     <!--<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">-->
-                        <!--<div class="card-body"> Data here! </div>-->
+                        <!--<div class="card-body" id="matrix-container"> </div>-->
                     <!--</div>-->
                 <!--</div>-->
-            <!--</div>-->
+
+            </div>
 
         </div>
         <div class="col-lg-3">

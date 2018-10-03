@@ -1,6 +1,6 @@
 var borough_color_switcher = {
     "Manhattan" : d3.rgb(10, 112, 4, 0.69),
-    "Brooklyn" : d3.rgb(239, 171, 81, 1),
+    "Brooklyn" : d3.rgb(239, 88, 118, 0.69),//d3.rgb(239, 171, 81, 1),
     "Bronx" : d3.rgb(188, 47, 0,  0.69),
     "Queens" : d3.rgb(248, 189, 11, 0.78),
     "Staten Island" : d3.rgb(22, 22, 212, 0.69),
@@ -9,7 +9,7 @@ var borough_color_switcher = {
 
 var BOROUGHS = ["Bronx", "Brooklyn", "EWR", "Manhattan", "Queens", "Staten Island"];
 
-var EXCLUDED_ZONE_COLOR = "fuchsia";
+var COLOR_EXCLUDED_ZONE = "fuchsia";
 
 var DOWS = [
     {value:"-1", label: "All" },
@@ -39,9 +39,9 @@ var MONTHS = [
 ];
 
 var PROPERTIES = [
-     {value:"pull", label:"Pull Location"},
-     {value:"drop", label:"Drop-off Location"}
-]
+    {value:"pull", label:"Pull Location"},
+    {value:"drop", label:"Drop-off Location"}
+];
 
 var TS = [
     {value: "-1", label: "All"},
@@ -52,6 +52,8 @@ var TS = [
     {value:"TS5", label: "20.00 - 24.00"},
     {value:"TS6", label: "24.00 - 06.00"}
 ];
+
+var COLOR_ZERO_FREQUENCY = "rgb(221, 217, 217)";
 
 function default_coloring(zone_data){
     return borough_color_switcher[zone_data.properties["borough"]]
@@ -187,11 +189,11 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
         if(excluded_zones.indexOf(parseInt(loc_id)) !== -1) { // zone is excluded
             result[d]["frequency"] = -1;
             result[d]["alpha"] = -1;
-            result[d]["color"] = EXCLUDED_ZONE_COLOR;
+            result[d]["color"] = COLOR_EXCLUDED_ZONE;
         }
         else{
             result[d]["alpha"] = get_alpha_value(result[d]["frequency"], max);
-            result[d]["color"] = get_interpolated_color(prop, result[d]["alpha"]);
+            result[d]["color"] = (result[d]["frequency"]===0) ? COLOR_ZERO_FREQUENCY : result[d]["color"] = get_interpolated_color(prop, result[d]["alpha"]) ;
         }
     });
 
@@ -199,7 +201,45 @@ function compute_data(zones_info, data, month, dow, ts, prop, excluded=[]) {
 
     return {frequencies: result, max_frequency: max};
 
-};
+}
+
+function get_trip_matrix(computed_data, zones_info){
+    let matrix = [];
+    let computed_frequencies = computed_data["frequencies"];
+
+    Object.keys(zones_info).forEach(function (current_zone_id) {
+        let zero_filled_array = Array.apply(null, Array(263)).map(Number.prototype.valueOf, 0);
+        Object.keys(computed_frequencies[current_zone_id]["to"]).forEach(function (destination_id) {
+            zero_filled_array[destination_id] += computed_frequencies[current_zone_id]["to"][destination_id];
+        });
+        zero_filled_array[current_zone_id] += computed_frequencies[current_zone_id]["self_trips"];
+        matrix.push(zero_filled_array);
+    });
+    return matrix;
+}
+
+function get_borough_matrix(computed_data, zones_info){
+    let matrix = [
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0]
+    ];
+    let frequencies = computed_data["frequencies"];
+
+    Object.keys(frequencies).forEach(function(location_id){
+        let current_departures = frequencies[location_id]["to"];
+        let current_zone_borough = zones_info[location_id]["borough"];
+        matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_zone_borough)] += frequencies[location_id]["self_trips"];
+        Object.keys(current_departures).forEach(function(departure_to){
+            let current_departure_borough = zones_info[departure_to]["borough"];
+            matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_departure_borough)] += current_departures[departure_to];
+        });
+    });
+    return matrix;
+}
 
 function get_alpha_value(frequency, max){
     return (frequency/max).toFixed(3)

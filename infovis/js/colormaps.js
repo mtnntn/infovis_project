@@ -96,7 +96,7 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
     }).attr("alpha", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["alpha"];
-    }).on("contextmenu", function(node){ //TODO Trovare un modo per chiudere lo schifo una volta che lo si genera.
+    }).on("contextmenu", function(node){
 
         let node_properties = node["properties"];
         let node_location_id = node_properties["LocationID"];

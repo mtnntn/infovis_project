@@ -102,6 +102,8 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
         let node_location_id = node_properties["LocationID"];
         let result_data = computed_data["frequencies"][node_location_id];
 
+        let result_data_to_or_from = (prop.node().value ==="pull")? result_data["to"] : result_data["from"];
+
         let node_center = get_center(this);
         let cx = node_center[0];
         let cy = node_center[1];
@@ -113,22 +115,22 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
         let svg_path_group = svg.append("g").attr("id", "zone_trips");
         svg_path_group.classed("zone_arrivals", true);
 
-        let max_freq = d3.max(get_dict_values(result_data["to"]));
-        let min_freq =d3.min(get_dict_values(result_data["to"]));
-        let total_trips = d3.sum(get_dict_values(result_data["to"]));
+        let max_freq = d3.max(get_dict_values(result_data_to_or_from));
+        let min_freq =d3.min(get_dict_values(result_data_to_or_from));
+        let total_trips = d3.sum(get_dict_values(result_data_to_or_from));
 
-        let destinations_data = Object.keys(result_data["to"]).map(function(to_zone_id){
+        let destinations_data = Object.keys(result_data_to_or_from).map(function(to_zone_id){
             let cx2_cy2 = get_center(d3.select("path.zone[location_id='"+to_zone_id+"']").node());
             let cx2 = cx2_cy2[0];
             let cy2 = cx2_cy2[1];
 
             let denom = (max_freq - min_freq);
             denom = (denom === 0)?1:denom;
-            let normalized_result = (result_data["to"][to_zone_id] - min_freq ) / denom;
+            let normalized_result = (result_data_to_or_from[to_zone_id] - min_freq ) / denom;
             normalized_result = (normalized_result <= 0.15) ? 0.15 : normalized_result;
             return {
                 location_id: to_zone_id,
-                frequency: result_data["to"][to_zone_id],
+                frequency: result_data_to_or_from[to_zone_id],
                 center_cx: cx2,
                 center_cy: cy2,
                 center_radius: normalized_result * 10,
@@ -145,7 +147,7 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
             })
             .attr("data-toggle", "tooltip")
             .attr("data-placement", "top")
-            .attr("title", function(d){return [result_data["to"][d.location_id], "/", total_trips].join(" ");})
+            .attr("title", function(d){return [result_data_to_or_from[d.location_id], "/", total_trips].join(" ");})
             .on("mouseover", handle_line_mouseover)
             .on("mouseleave", handle_line_mouseleave)
             .attr("id", function(d){return ["center_", d.location_id].join("");})

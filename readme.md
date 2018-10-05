@@ -6,7 +6,7 @@ Final project for [Information Visualization](http://www.dia.uniroma3.it/~infovi
 
 - Andrea De Angelis - [and.deangelis@hotmail.com](mailto:and.deangelis@hotmail.com),
 - Antonio Matinata - [a.matinata@gmail.com](mailto:a.matinata@gmail.com), [ant.matinata@stud.uniroma3.it](ant.matinata@stud.uniroma3.it)
-- Maurizio Mazzei - [mau.mazzei@stud.uniroma3.it](mailto:mau.mazzei@st ud.uniroma3.it) 
+- Maurizio Mazzei - [mau.mazzei@stud.uniroma3.it](mailto:mau.mazzei@stud.uniroma3.it) 
 
 ## Goal of The Project
  

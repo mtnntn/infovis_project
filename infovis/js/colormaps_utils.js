@@ -218,7 +218,7 @@ function get_trip_matrix(computed_data, zones_info){
     return matrix;
 }
 
-function get_borough_matrix(computed_data, zones_info){
+function get_borough_matrix(computed_data, zones_info, self_value=false){
     let matrix = [
         [0,0,0,0,0,0],
         [0,0,0,0,0,0],
@@ -232,10 +232,12 @@ function get_borough_matrix(computed_data, zones_info){
     Object.keys(frequencies).forEach(function(location_id){
         let current_departures = frequencies[location_id]["to"];
         let current_zone_borough = zones_info[location_id]["borough"];
-        matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_zone_borough)] += frequencies[location_id]["self_trips"];
+        if(self_value)
+            matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_zone_borough)] += frequencies[location_id]["self_trips"];
         Object.keys(current_departures).forEach(function(departure_to){
             let current_departure_borough = zones_info[departure_to]["borough"];
-            matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_departure_borough)] += current_departures[departure_to];
+            if(current_zone_borough !== current_departure_borough || self_value)
+                matrix[BOROUGHS.indexOf(current_zone_borough)][BOROUGHS.indexOf(current_departure_borough)] += current_departures[departure_to];
         });
     });
     return matrix;
@@ -257,4 +259,106 @@ function show_tooltip(element_node){
 
 function hide_tooltip(element_node){
     $(element_node).tooltip("hide");
+}
+
+function plot_chord(chord_container, matrix, labels, color_switcher){
+
+    let width = 1200,
+        height = 900,
+        outerRadius = Math.min(width, height) * 0.5 - 120,
+        innerRadius = outerRadius - 20;
+
+    chord_container.selectAll("svg").remove();
+
+    let svg = chord_container.append("svg").attr("width", width).attr("height", height);
+
+    let chord = d3.chord().padAngle(0.1).sortSubgroups(d3.descending);
+
+    let arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+
+    let ribbon = d3.ribbon().radius(innerRadius);
+
+    let g = svg.append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+        .datum(chord(matrix));
+
+    let group = g.append("g")
+        .attr("class", "groups")
+        .selectAll("g")
+        .data(function(chords) { return chords.groups; })
+        .enter().append("g").attr("class", "group");
+
+    group.append("title")
+        .text(function(d){
+            return labels[d.index];
+        });
+
+    group.append("text")
+        .each(function(d) { d.angle = ((d.startAngle + d.endAngle) / 2);})
+        .attr("dy", ".2em")
+        .attr("class", "chord-titles")
+        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+        .attr("transform", function(d) {
+            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                + "translate(" + (innerRadius + 55) + ")"
+                + (d.angle > Math.PI ? "rotate(180)" : "")
+        })
+        .text(function(d,i) { return labels[i]; });
+
+    group.append("path")
+        .style("fill", function(d) { return d3.rgb(color_switcher[labels[d.index]]);})
+        .style("stroke", function(d) { return d3.rgb(color_switcher[labels[d.index]]).darker();})
+        .style("opacity", 0.5)
+        .attr("d", arc);
+
+    g.append("g")
+        .attr("class", "ribbons")
+        .selectAll("path")
+        .data(function(chords) { return chords; })
+        .enter()
+        .append("path")
+        .attr("d", ribbon)
+        .attr("class", "ribbon")
+        .style("fill", function(d) { return d3.rgb(color_switcher[labels[d.source.index]]); })
+        .style("stroke", function(d) { return d3.rgb(color_switcher[labels[d.source.index]]).darker(); })
+        .on("mouseover", function(d, i){
+            let node_location_id = d.source.index;
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", function(el){
+                    let c = el.source.index !== node_location_id && el.target.index !== node_location_id;
+                    return (c) ? 0 : 1;
+                });
+        })
+        .on("mouseleave", function(){
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", 1);
+        })
+        .append("title")
+        .text(function(d){
+
+            // D -> A : total trips from zone D to A ( percentage of the trips of D that arrive in A)
+            // A -> D : total trips from zone A to D ( percentage of the trips of A that arrive in D)
+
+            let d_total = d3.sum(matrix[d.source.index]);
+            let d_to_a_perc = ( 100 * ( d.source.value / d_total) ).toFixed(2);
+
+            let a_total = d3.sum(matrix[d.target.index]);
+            let a_to_d_perc = ( 100 * ( d.target.value / a_total) ).toFixed(2);
+
+            let d_name = labels[d.source.index];
+            let a_name = labels[d.target.index];
+            let d_to_a_value = d.source.value;
+            let a_to_d_value = d.target.value;
+
+            let str = d_name+" --> "+ a_name +" : " + d_to_a_value+" ( "+d_to_a_perc+"% ) "+"\n";
+            if(d_name!==a_name)
+                str += a_name+" --> "+ d_name +" : " + a_to_d_value+" ( "+a_to_d_perc+"% ) ";
+            return str;
+
+        });
+
 }

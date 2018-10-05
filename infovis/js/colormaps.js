@@ -217,108 +217,17 @@ function update_matrix(computed_data, zones_info){
 function update_chord(computed_data, zones_info){
     console.log("Updating chord container...");
     let chord_container = d3.select("#chord-container");
+
+    chord_container.append("button").attr("self-trips", false).text("toggle in-zone trips").on("click", function(n){
+        let btn = d3.select(this);
+        let account_self_trips = (btn.attr("self-trips") === "false");
+        btn.attr("self-trips", account_self_trips);
+        matrix = get_borough_matrix(computed_data, zones_info, account_self_trips);
+        plot_chord(chord_container, matrix, BOROUGHS, borough_color_switcher);
+    }).classed("btn btn-success", true);
+
     let matrix = get_borough_matrix(computed_data, zones_info);
-
-    let width = 1200,
-        height = 900,
-        outerRadius = Math.min(width, height) * 0.5 - 120,
-        innerRadius = outerRadius - 20;
-
-    chord_container.selectAll("svg").remove();
-
-    let svg = chord_container.append("svg").attr("width", width).attr("height", height);
-
-    let chord = d3.chord().padAngle(0.1).sortSubgroups(d3.descending);
-
-    let arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
-
-    let ribbon = d3.ribbon().radius(innerRadius);
-
-    let g = svg.append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-        .datum(chord(matrix));
-
-    let group = g.append("g")
-        .attr("class", "groups")
-        .selectAll("g")
-        .data(function(chords) { return chords.groups; })
-        .enter().append("g").attr("class", "group");
-
-    group.append("title")
-        .text(function(d){
-            return BOROUGHS[d.index];
-        });
-
-    group.append("text")
-        .each(function(d) { d.angle = ((d.startAngle + d.endAngle) / 2);})
-        .attr("dy", ".2em")
-        .attr("class", "chord-titles")
-        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-        .attr("transform", function(d) {
-            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-                + "translate(" + (innerRadius + 55) + ")"
-                + (d.angle > Math.PI ? "rotate(180)" : "")
-        })
-        .text(function(d,i) { return BOROUGHS[i]; });
-
-    group.append("path")
-        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]);})
-        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]).darker();})
-        .style("opacity", 0.5)
-        .attr("d", arc);
-
-    g.append("g")
-        .attr("class", "ribbons")
-        .selectAll("path")
-        .data(function(chords) { return chords; })
-        .enter()
-        .append("path")
-        .attr("d", ribbon)
-        .attr("class", "ribbon")
-        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]); })
-        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]).darker(); })
-        .on("mouseover", function(d, i){
-            let node_location_id = d.source.index;
-            g.selectAll(".ribbon")
-                .transition()
-                .duration(1000)
-                .style("opacity", function(el){
-                    let c = el.source.index !== node_location_id && el.target.index !== node_location_id;
-                    return (c) ? 0 : 1;
-                });
-        })
-        .on("mouseleave", function(){
-            g.selectAll(".ribbon")
-                .transition()
-                .duration(1000)
-                .style("opacity", 1);
-        })
-        .append("title")
-        .text(function(d){ 
-
-            let departure_borough_total_trips = d3.sum(matrix[d.source.index]);
-            let departure_to_arrival_perc = ( 100 * ( d.source.value / departure_borough_total_trips) ).toFixed(2);
-
-            let arrival_borough_total_trips = d3.sum(matrix[d.target.index]);
-            let arrival_to_departure_perc = ( 100 * ( d.target.value / arrival_borough_total_trips) ).toFixed(2);
-
-            let departure_borough = BOROUGHS[d.source.index];
-            let arrival_borough = BOROUGHS[d.target.index];
-            let departure_borough_val = d.source.value;
-            let arrival_borough_val = d.target.value;
-
-            /*
-             * D -> A : total trips from zone D to A ( percentage of the trips of D that arrive in A)
-             * A -> D : total trips from zone A to D ( percentage of the trips of A that arrive in D)
-             * */
-
-            let str = departure_borough+" --> "+ arrival_borough +" : " + departure_borough_val+" ( "+departure_to_arrival_perc+"% ) "+"\n";
-            if(departure_borough!==arrival_borough)
-                str += arrival_borough+" --> "+ departure_borough +" : " + arrival_borough_val+" ( "+arrival_to_departure_perc+"% ) ";
-            return str;
-
-        });
-
+    plot_chord(chord_container, matrix, BOROUGHS, borough_color_switcher);
     console.log("Chord container updating done...");
 }
 
@@ -500,4 +409,112 @@ function get_selected_boroughs() {
 
 function get_dict_values(dictionary){
     return Object.keys(dictionary).map(function(key){ return dictionary[key]; });
+}
+
+function update_chord2(computed_data, zones_info){
+    console.log("Updating chord container...");
+    let chord_container = d3.select("#chord-container");
+    let matrix = get_borough_matrix(computed_data, zones_info);
+
+    let width = 1200,
+        height = 900,
+        outerRadius = Math.min(width, height) * 0.5 - 120,
+        innerRadius = outerRadius - 20;
+
+    chord_container.selectAll("svg").remove();
+
+    let svg = chord_container.append("svg").attr("width", width).attr("height", height);
+
+    let chord = d3.chord().padAngle(0.1).sortSubgroups(d3.descending);
+
+    let arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+
+    let ribbon = d3.ribbon().radius(innerRadius);
+
+    let g = svg.append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+        .datum(chord(matrix));
+
+    let group = g.append("g")
+        .attr("class", "groups")
+        .selectAll("g")
+        .data(function(chords) { return chords.groups; })
+        .enter().append("g").attr("class", "group");
+
+    group.append("title")
+        .text(function(d){
+            return BOROUGHS[d.index];
+        });
+
+    group.append("text")
+        .each(function(d) { d.angle = ((d.startAngle + d.endAngle) / 2);})
+        .attr("dy", ".2em")
+        .attr("class", "chord-titles")
+        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+        .attr("transform", function(d) {
+            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                + "translate(" + (innerRadius + 55) + ")"
+                + (d.angle > Math.PI ? "rotate(180)" : "")
+        })
+        .text(function(d,i) { return BOROUGHS[i]; });
+
+    group.append("path")
+        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]);})
+        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]).darker();})
+        .style("opacity", 0.5)
+        .attr("d", arc);
+
+    g.append("g")
+        .attr("class", "ribbons")
+        .selectAll("path")
+        .data(function(chords) { return chords; })
+        .enter()
+        .append("path")
+        .attr("d", ribbon)
+        .attr("class", "ribbon")
+        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]); })
+        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]).darker(); })
+        .on("mouseover", function(d, i){
+            let node_location_id = d.source.index;
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", function(el){
+                    let c = el.source.index !== node_location_id && el.target.index !== node_location_id;
+                    return (c) ? 0 : 1;
+                });
+        })
+        .on("mouseleave", function(){
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", 1);
+        })
+        .append("title")
+        .text(function(d){
+
+            let departure_borough_total_trips = d3.sum(matrix[d.source.index]);
+            let departure_to_arrival_perc = ( 100 * ( d.source.value / departure_borough_total_trips) ).toFixed(2);
+
+            let arrival_borough_total_trips = d3.sum(matrix[d.target.index]);
+            let arrival_to_departure_perc = ( 100 * ( d.target.value / arrival_borough_total_trips) ).toFixed(2);
+
+            let departure_borough = BOROUGHS[d.source.index];
+            let arrival_borough = BOROUGHS[d.target.index];
+            let departure_borough_val = d.source.value;
+            let arrival_borough_val = d.target.value;
+
+            /*
+             * D -> A : total trips from zone D to A ( percentage of the trips of D that arrive in A)
+             * A -> D : total trips from zone A to D ( percentage of the trips of A that arrive in D)
+             * */
+
+            let str = departure_borough+" --> "+ arrival_borough +" : " + departure_borough_val+" ( "+departure_to_arrival_perc+"% ) "+"\n";
+            if(departure_borough!==arrival_borough)
+                str += arrival_borough+" --> "+ departure_borough +" : " + arrival_borough_val+" ( "+arrival_to_departure_perc+"% ) ";
+            return str;
+
+        });
+
+    console.log("Chord container updating done...");
 }

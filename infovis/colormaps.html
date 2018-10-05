@@ -29,7 +29,7 @@
     <!-- /Styles -->
 
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <!-- Navigation -->
 <ul class="nav custom_nav justify-content-center py-4">
@@ -37,13 +37,7 @@
         <a class="nav-link white-text" href="dataset_explanation.html">Project</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link white-text active" href="colormaps.html">Color maps</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link white-text" href="#!">TBA</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link white-text" href="#!">TBA</a>
+        <a class="nav-link white-text active" href="colormaps.html">Visualizations</a>
     </li>
     <li class="nav-item">
         <a class="nav-link white-text" href="about_us.html">About Us</a>
@@ -56,7 +50,7 @@
 <!-- Panel -->
 <section class="text-center my-5">
     <!-- Section heading -->
-    <h2 class="h1-responsive my-5">Color Maps</h2>
+    <h2 class="h1-responsive my-5">Color Map</h2>
     <!-- Section description -->
 </section>
 <!-- /Panel -->
@@ -90,8 +84,12 @@
                             <td id="zone_name"></td>
                         </tr>
                         <tr>
-                            <th scope="row">Frequency: </th>
+                            <th scope="row">Total Frequency: </th>
                             <td id="frequency"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">In-Zone trips: </th>
+                            <td id="self_trips"></td>
                         </tr>
                         <tr>
                             <th scope="row">Alpha: </th>
@@ -107,9 +105,58 @@
             <div class="row">
                 <svg class="map_svg" width="1260" height="900"></svg>
             </div>
-            <div class="row">
-                <div class="container-fluid" id="table-container"> </div>
+            <!--<div class="row">-->
+                <!--<div class="container-fluid" id="table-container"> </div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+               <!--<div class="container-fluid" id="chord-container"> </div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+                <!--<div class="container-fluid" id="matrix-container"> </div>-->
+            <!--</div>-->
+            <div id="accordion" style="margin-top:2em;">
+
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Results table
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                        <div class="card-body table-responsive" id="table-container"> </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Chord Graph
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                        <div class="card-body" id="chord-container"> </div>
+                    </div>
+                </div>
+
+                <!--<div class="card">-->
+                    <!--<div class="card-header" id="headingThree">-->
+                        <!--<h5 class="mb-0">-->
+                            <!--<button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">-->
+                                <!--Incidence Matrix-->
+                            <!--</button>-->
+                        <!--</h5>-->
+                    <!--</div>-->
+                    <!--<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">-->
+                        <!--<div class="card-body" id="matrix-container"> </div>-->
+                    <!--</div>-->
+                <!--</div>-->
+
             </div>
+
         </div>
         <div class="col-lg-3">
             <div class="row">

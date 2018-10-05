@@ -2,9 +2,9 @@ let map_svg = d3.select("svg.map").attr("width", 900).attr("height", 1260);
 
 let infobox_div = d3.select("div.infobox");
 
-let borough_color_switcher = {
+var borough_color_switcher = {
     "Manhattan" : d3.rgb(10, 112, 4, 0.69),
-    "Brooklyn" : d3.rgb(239, 171, 81, 1),
+    "Brooklyn" : d3.rgb(239, 88, 118, 0.69),//d3.rgb(239, 171, 81, 1),
     "Bronx" : d3.rgb(188, 47, 0,  0.69),
     "Queens" : d3.rgb(248, 189, 11, 0.78),
     "Staten Island" : d3.rgb(22, 22, 212, 0.69),

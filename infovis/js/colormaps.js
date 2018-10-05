@@ -21,35 +21,57 @@ let sorting_asc = true;
 
 form_reset();
 
-Promise.all([d3.json("data/geodata/ny_zones.json")]).then(function (map_data) {
+Promise.all([d3.json("data/geodata/ny_zones.json"), d3.tsv("data/month_dow_ts_puloc_doloc.csv")]).then(function (data) {
 
-    Promise.all([d3.tsv("data/month_dow_ts_puloc_doloc.csv")]).then(function(dataset_data){
+    let map_data = data[0];
+    let dataset_data = data[1];
 
-        let zones_info = {};
-        map_data[0]["objects"]["ny_zones"]["geometries"].forEach(function(el){
-            let zi = el["properties"];
-            zones_info[zi["LocationID"].toString()] = {
-                "location_id": zi["LocationID"].toString(),
-                "zone": zi["zone"],
-                "borough": zi["borough"]
-            };
-        });
+    let zones_info = {};
+    map_data["objects"]["ny_zones"]["geometries"].forEach(function(el){
+        let zi = el["properties"];
+        zones_info[zi["LocationID"].toString()] = {
+            "location_id": zi["LocationID"].toString(),
+            "zone": zi["zone"],
+            "borough": zi["borough"]
+        };
+    });
 
-        plot_map(svg, map_data[0], function(){return "black";});    // plot the map
-        update_info(svg, zones_info, dataset_data[0], excluded_zones);      // colorize the map
-        svg.selectAll(".zone").on("click", function(n){ // Exclude zone on click
-            console.log("Updating Excluded zones: ", excluded_zones);
-            let zone_location_id = n.properties["LocationID"];
-            exclude_zone(legend_svg, d3.select(this), zone_location_id, excluded_zones);
-            console.log("Excluded zones updating done: ", excluded_zones);
-        });
+    plot_map(svg, map_data, function(){return "black";});    // plot the map
+    update_info(svg, zones_info, dataset_data, excluded_zones);      // colorize the map
 
-        d3.select("#form_submit").on("click", function(){ // recolor map according to the submitted input.
-            update_info(svg, zones_info, dataset_data[0], excluded_zones);
-        });
+    svg.selectAll(".zone").on("click", function(n){ // Exclude zone on click
+        console.log("Updating Excluded zones: ", excluded_zones);
+        let zone_location_id = n.properties["LocationID"];
+        exclude_zone(legend_svg, d3.select(this), zone_location_id, excluded_zones);
+        console.log("Excluded zones updating done: ", excluded_zones);
+    });
 
+    d3.select("#form_submit").on("click", function(){ // recolor map according to the submitted input.
+        update_info(svg, zones_info, dataset_data, excluded_zones);
     });
 });
+
+let handle_line_mouseover = function(){
+    let current_node_class = "";
+    $.each(this.classList, function(k, v){ if(v.indexOf("path_to") !== -1) current_node_class=v; });
+    d3.selectAll("."+current_node_class).classed("active_path", true);
+    let circle_node = d3.select("circle."+current_node_class);
+    show_tooltip(circle_node.node());
+    circle_node.classed("active_path", true);
+};
+
+let handle_line_mouseleave = function(){
+    let current_node_class = "";
+    $.each(this.classList, function(k, v){ if(v.indexOf("path_to") !== -1) current_node_class=v; });
+    d3.selectAll("."+current_node_class).classed("active_path", false);
+    let circle_node = d3.select("circle."+current_node_class);
+    hide_tooltip(circle_node.node());
+    circle_node.classed("active_path", false);
+};
+
+function get_path_total_length(x1, y1, x2, y2){
+    return Math.sqrt( Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2) )
+}
 
 function update_info(svg, zones_info, dataset_data, excluded_zones){
     let month_v = month.node().value;
@@ -61,20 +83,163 @@ function update_info(svg, zones_info, dataset_data, excluded_zones){
     let computed_data = compute_data(zones_info, dataset_data, month_v, dow_v, ts_v, prop_v, excluded_zones);
 
     console.log("Recoloring Map...");
-    svg.selectAll(".zone").attr("fill", function(node){
+
+    svg.selectAll(".zone").attr("prev_fill", null).attr("fill", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["color"];
     }).attr("frequency", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["frequency"];
+    }).attr("self_trips", function(node){
+        let location_id = node["properties"]["LocationID"];
+        return computed_data["frequencies"][location_id]["self_trips"];
     }).attr("alpha", function(node){
         let location_id = node["properties"]["LocationID"];
         return computed_data["frequencies"][location_id]["alpha"];
-    }).attr("prev_fill", null);
+    }).on("contextmenu", function(node){
+
+        let node_properties = node["properties"];
+        let node_location_id = node_properties["LocationID"];
+        let result_data = computed_data["frequencies"][node_location_id];
+
+        let result_data_to_or_from = (prop.node().value ==="pull")? result_data["to"] : result_data["from"];
+
+        let node_center = get_center(this);
+        let cx = node_center[0];
+        let cy = node_center[1];
+
+        //clean previous trip graph
+        d3.select("#zone_trips").remove();
+
+        // Create the new trip's graph for the selected zone.
+        let svg_path_group = svg.append("g").attr("id", "zone_trips");
+        svg_path_group.classed("zone_arrivals", true);
+
+        let max_freq = d3.max(get_dict_values(result_data_to_or_from));
+        let min_freq =d3.min(get_dict_values(result_data_to_or_from));
+        let total_trips = d3.sum(get_dict_values(result_data_to_or_from));
+
+        let destinations_data = Object.keys(result_data_to_or_from).map(function(to_zone_id){
+            let cx2_cy2 = get_center(d3.select("path.zone[location_id='"+to_zone_id+"']").node());
+            let cx2 = cx2_cy2[0];
+            let cy2 = cx2_cy2[1];
+
+            let denom = (max_freq - min_freq);
+            denom = (denom === 0)?1:denom;
+            let normalized_result = (result_data_to_or_from[to_zone_id] - min_freq ) / denom;
+            normalized_result = (normalized_result <= 0.15) ? 0.15 : normalized_result;
+            return {
+                location_id: to_zone_id,
+                frequency: result_data_to_or_from[to_zone_id],
+                center_cx: cx2,
+                center_cy: cy2,
+                center_radius: normalized_result * 10,
+                arrow_vel: normalized_result*100 / Math.abs(cx - cx2)
+            };
+        });
+
+        // Create center circle foreach destination
+        svg_path_group.selectAll("circle").data(destinations_data).enter().append("circle")
+            .attr("cx", function(d){return d.center_cx;})
+            .attr("cy", function(d){return d.center_cy;})
+            .attr("r", function(d){
+                return d.center_radius;
+            })
+            .attr("data-toggle", "tooltip")
+            .attr("data-placement", "top")
+            .attr("title", function(d){return [result_data_to_or_from[d.location_id], "/", total_trips].join(" ");})
+            .on("mouseover", handle_line_mouseover)
+            .on("mouseleave", handle_line_mouseleave)
+            .attr("id", function(d){return ["center_", d.location_id].join("");})
+            .attr("class", function(d){ return "path_to_"+d.location_id ; })
+            .attr("opacity", 1)
+            .classed("zone_center_to", true);
+
+        // Create line from the center of the selected zone to the center of each destination.
+        svg_path_group.selectAll("line")
+            .data(destinations_data)
+            .enter()
+            .append("line")
+            .attr("x1", cx)
+            .attr("y1", cy)
+            .attr("x2", function (d) { return d.center_cx;})
+            .attr("y2", function (d) { return d.center_cy;})
+            .attr("id", function(d){return ["path_to_zone_", d.location_id].join("");})
+            .attr("class", function(d){ return "path_to_"+d.location_id ; })
+            .attr("opacity", 1)
+            .classed("zone_edge_to", true)
+            .on("mouseover", handle_line_mouseover)
+            .on("mouseleave", handle_line_mouseleave)
+            .attr("stroke-dasharray", function(d){
+                let l = get_path_total_length(cx, cy, d.center_cx, d.center_cy);
+                return l+" "+l;
+            })
+            .attr("stroke-dashoffset", function(d){ return get_path_total_length(cx, cy, d.center_cx, d.center_cy)})
+            .transition()
+            .duration(2000)
+            .attr("stroke-dashoffset", 0);
+
+        svg_path_group.append("circle")
+            .attr("cx", cx)
+            .attr("cy", cy)
+            .attr("r", 5)
+            .attr("fill", "rgb(252, 200, 42)")
+            .on("click", function (node) {
+                svg_path_group.selectAll("circle.zone_center_to")
+                    .classed("zone_center_to", false)
+                    .transition().duration(1000)
+                    .attr("opacity", 0)
+                    .on("start", function(n){
+                        let c = this.classList.value;
+                        svg_path_group.select("line."+c)
+                            .transition()
+                            .duration(1000)
+                            .attr("stroke-dashoffset", function(d){
+                                return get_path_total_length(cx, cy, d.center_cx, d.center_cy)
+                            }).remove();
+                    })
+                    .remove();
+
+                d3.select(this).transition().duration(2000).attr("opacity", 0).remove()
+            });
+
+    });
     console.log("Recoloring Map done...");
 
     update_table(d3.select("#table-container"), computed_data["frequencies"]);
+    update_chord(computed_data, zones_info);
     append_legend(legend_svg, prop_v);
+}
+
+function update_matrix(computed_data, zones_info){
+    let matrix_container = d3.select("#matrix-container");
+    let matrix = get_trip_matrix(computed_data, zones_info);
+}
+
+function update_chord(computed_data, zones_info){
+    console.log("Updating chord container...");
+    let chord_container = d3.select("#chord-container");
+
+    chord_container.append("button").attr("self-trips", false).text("toggle in-zone trips").on("click", function(n){
+        let btn = d3.select(this);
+        let account_self_trips = (btn.attr("self-trips") === "false");
+        btn.attr("self-trips", account_self_trips);
+        matrix = get_borough_matrix(computed_data, zones_info, account_self_trips);
+        plot_chord(chord_container, matrix, BOROUGHS, borough_color_switcher);
+    }).classed("btn btn-success", true);
+
+    let matrix = get_borough_matrix(computed_data, zones_info);
+    plot_chord(chord_container, matrix, BOROUGHS, borough_color_switcher);
+    console.log("Chord container updating done...");
+}
+
+function get_center(element) {
+    let node_bbox = element.getBBox();
+    let n_w = node_bbox["width"];
+    let n_h = node_bbox["height"];
+    let cx = node_bbox["x"] + n_w / 2;
+    let cy = node_bbox["y"] + n_h / 2;
+    return [cx, cy];
 }
 
 function update_table(table_container, data){
@@ -157,7 +322,7 @@ function exclude_zone(svg, d3_obj, zone_to_exclude, excluded_zones){
 
     if(zone_to_exclude_index === -1){ //the zone should be added to the list
         d3_obj.attr("prev_fill", d3_obj.attr("fill"));
-        d3_obj.attr("fill", EXCLUDED_ZONE_COLOR);
+        d3_obj.attr("fill", COLOR_EXCLUDED_ZONE);
         d3_obj.append("title").text("Excluded zone");
         let li_text = [d3_obj.attr("location_id"), d3_obj.attr("borough"), d3_obj.attr("zone")].join(" - ");
         excluded_zones_list.append("tr").attr("location_id", d3_obj.attr("location_id")).append("td").text(li_text);
@@ -242,4 +407,116 @@ function form_reset(){
 
 function get_selected_boroughs() {
     return Array.from(borough.node().selectedOptions).map(function(d){return d.value;});
+}
+
+function get_dict_values(dictionary){
+    return Object.keys(dictionary).map(function(key){ return dictionary[key]; });
+}
+
+function update_chord2(computed_data, zones_info){
+    console.log("Updating chord container...");
+    let chord_container = d3.select("#chord-container");
+    let matrix = get_borough_matrix(computed_data, zones_info);
+
+    let width = 1200,
+        height = 900,
+        outerRadius = Math.min(width, height) * 0.5 - 120,
+        innerRadius = outerRadius - 20;
+
+    chord_container.selectAll("svg").remove();
+
+    let svg = chord_container.append("svg").attr("width", width).attr("height", height);
+
+    let chord = d3.chord().padAngle(0.1).sortSubgroups(d3.descending);
+
+    let arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+
+    let ribbon = d3.ribbon().radius(innerRadius);
+
+    let g = svg.append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+        .datum(chord(matrix));
+
+    let group = g.append("g")
+        .attr("class", "groups")
+        .selectAll("g")
+        .data(function(chords) { return chords.groups; })
+        .enter().append("g").attr("class", "group");
+
+    group.append("title")
+        .text(function(d){
+            return BOROUGHS[d.index];
+        });
+
+    group.append("text")
+        .each(function(d) { d.angle = ((d.startAngle + d.endAngle) / 2);})
+        .attr("dy", ".2em")
+        .attr("class", "chord-titles")
+        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+        .attr("transform", function(d) {
+            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                + "translate(" + (innerRadius + 55) + ")"
+                + (d.angle > Math.PI ? "rotate(180)" : "")
+        })
+        .text(function(d,i) { return BOROUGHS[i]; });
+
+    group.append("path")
+        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]);})
+        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.index]]).darker();})
+        .style("opacity", 0.5)
+        .attr("d", arc);
+
+    g.append("g")
+        .attr("class", "ribbons")
+        .selectAll("path")
+        .data(function(chords) { return chords; })
+        .enter()
+        .append("path")
+        .attr("d", ribbon)
+        .attr("class", "ribbon")
+        .style("fill", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]); })
+        .style("stroke", function(d) { return d3.rgb(borough_color_switcher[BOROUGHS[d.source.index]]).darker(); })
+        .on("mouseover", function(d, i){
+            let node_location_id = d.source.index;
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", function(el){
+                    let c = el.source.index !== node_location_id && el.target.index !== node_location_id;
+                    return (c) ? 0 : 1;
+                });
+        })
+        .on("mouseleave", function(){
+            g.selectAll(".ribbon")
+                .transition()
+                .duration(1000)
+                .style("opacity", 1);
+        })
+        .append("title")
+        .text(function(d){
+
+            let departure_borough_total_trips = d3.sum(matrix[d.source.index]);
+            let departure_to_arrival_perc = ( 100 * ( d.source.value / departure_borough_total_trips) ).toFixed(2);
+
+            let arrival_borough_total_trips = d3.sum(matrix[d.target.index]);
+            let arrival_to_departure_perc = ( 100 * ( d.target.value / arrival_borough_total_trips) ).toFixed(2);
+
+            let departure_borough = BOROUGHS[d.source.index];
+            let arrival_borough = BOROUGHS[d.target.index];
+            let departure_borough_val = d.source.value;
+            let arrival_borough_val = d.target.value;
+
+            /*
+             * D -> A : total trips from zone D to A ( percentage of the trips of D that arrive in A)
+             * A -> D : total trips from zone A to D ( percentage of the trips of A that arrive in D)
+             * */
+
+            let str = departure_borough+" --> "+ arrival_borough +" : " + departure_borough_val+" ( "+departure_to_arrival_perc+"% ) "+"\n";
+            if(departure_borough!==arrival_borough)
+                str += arrival_borough+" --> "+ departure_borough +" : " + arrival_borough_val+" ( "+arrival_to_departure_perc+"% ) ";
+            return str;
+
+        });
+
+    console.log("Chord container updating done...");
 }
